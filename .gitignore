@@ -3,3 +3,10 @@ papers/
 paper/*.pdf
 tools/
 results/proofs/
+results/cubes_*/*.cnf
+results/cubes_*/*.lrat
+results/cubes_*/*.model
+results/cubes_*/**/*.cnf
+results/cubes_*/**/*.lrat
+results/cubes_*/**/*.fifo
+results/cubes_*/**/*.tmp

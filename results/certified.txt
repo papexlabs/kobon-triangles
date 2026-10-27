@@ -1,0 +1,2 @@
+k9_22 case-b lex: cadical 3.0.1 --lrat, lrat-check VERIFIED (2026-10-27, proof 3.84 GB, check 86 s)
+k8_16 simple/case-b (plain, red2, lex): lrat-check VERIFIED (2026-10-27)
