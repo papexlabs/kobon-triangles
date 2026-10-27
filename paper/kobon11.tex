@@ -1,0 +1,151 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[hidelinks]{hyperref}
+
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
+\title{Kobon triangles beyond simple arrangements:\\ a complete SAT model and the case of eleven lines\\[4pt]
+\large Working draft, version 0 (27 October 2026)}
+\author{Papex Labs}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The Kobon triangle problem asks for the largest number $K(n)$ of bounded triangular faces in an
+arrangement of $n$ lines in the plane. The classical bound $K(n) \le \lfloor n(n-2)/3 \rfloor$ is
+proved by counting segments, an argument that assumes every segment is a side of at most one
+triangle. That assumption holds in simple arrangements but fails when three or more lines meet at a
+point. In October 2026 the values $a(11)$ to $a(17)$ were removed from OEIS A006066 after a
+counterexample to the lemma that extended the argument to all arrangements. We describe a SAT model
+whose solutions are exactly the affine arrangements of $n$ pseudolines, simple or not, together with
+a set of their bounded triangular faces, and we validate it by reproducing $K(n)$ for $3 \le n \le 7$
+over all arrangements. The model is designed to decide whether some arrangement of $11$ lines,
+simple or not, has $33$ bounded triangles. This version reports the model, its validation and the
+status of the computation; it states no result for $n = 11$ yet.
+\end{abstract}
+
+\section{The question}
+
+For $n$ lines in the real affine plane, let $K(n)$ be the largest number of bounded faces that are
+triangles. Honma found an arrangement of $11$ lines with $32$ triangles, and the counting bound gives
+$33$. For simple arrangements of $11$ pseudolines meeting the bound (\emph{perfect} arrangements),
+Savchuk~\cite{savchuk} showed by SAT that $33$ triangles are impossible. The reduction of the general
+case to simple perfect arrangements rested on Lemmas~1 and~2 of Cl\'ement and Bader~\cite{cb}. In
+2026 Parpalak and Utkin pointed out a counterexample to Step~3 of Lemma~1: in the arrangement formed
+by the sides and medians of a triangle, the centroid is a vertex of six pairs of triangles sharing a
+side~\cite{oeis}. On 9 October 2026 Savchuk removed $a(11)$ to $a(17)$ from OEIS A006066 and recorded
+this reason~\cite{oeis}.
+
+The draft of Cl\'ement and Bader states that Tamura's bound ``directly follows from the proof of
+Lemma~1''~\cite{cb}. So for arrangements in which three or more lines meet at a point, both the
+value $a(11)$ and the bound $33$ are open as far as these sources go.
+
+\section{Why non-simple arrangements escape the counting argument}
+
+A \emph{vertex} is a point where at least two lines meet; its multiplicity $m_v$ is the number of
+lines through it. A \emph{segment} is a bounded piece of a line between two consecutive vertices
+on it. Each side of a bounded triangular face is exactly one segment: a line through an interior
+point of a side would cross into the triangle.
+
+\begin{lemma}\label{lem:simple}
+If a segment $PQ$ is a side of two triangular faces, then $m_P \ge 3$ or $m_Q \ge 3$.
+\end{lemma}
+\begin{proof}
+Let $PQ$ lie on line $L$. A triangle on one side of $L$ is bounded by $L$, a line $A$ through $P$
+and a line $B$ through $Q$, with apex $A \cap B$ on that side; a triangle on the other side uses
+lines $A'$ through $P$ and $B'$ through $Q$, with apex on the other side. If $A = A'$ and $B = B'$
+then $A$ and $B$ meet on both sides of $L$, which two lines (or pseudolines) cannot do. Hence
+$A \ne A'$ or $B \ne B'$, and $P$ or $Q$ lies on at least three lines.
+\end{proof}
+
+In a simple arrangement each segment is therefore a side of at most one triangle, there are at most
+$n(n-2)$ segments, and $3T \le n(n-2)$. Without simplicity, write $S$ for the number of segments and
+$D$ for the number of segments that are sides of two triangles. Then $3T \le S + D$. A vertex of
+multiplicity $m$ removes $m(m-2)$ segments compared with a simple vertex set, a class of $q$ parallel
+lines removes $q(q-1)$, and by Lemma~\ref{lem:simple} each doubly used segment can be charged to an
+endpoint of multiplicity at least $3$, which is an endpoint of at most $2m$ segments. This gives
+\[
+  3T \;\le\; n(n-2) \;-\; \sum_{\text{parallel classes}} q(q-1) \;-\; \sum_{v} m_v(m_v-4),
+\]
+where the last sum runs over vertices with $m_v \ge 3$. A vertex of multiplicity $3$ contributes
+$+3$, so this argument alone does not even give $3T \le n(n-2)$. The triangle with its medians
+shows that doubly used segments do occur.
+
+\section{A model over all pseudoline arrangements}
+
+\paragraph{Arrangements as oriented matroids.} An affine arrangement of $n$ pseudolines is a
+projective arrangement of $n+1$ pseudolines with one of them, labelled $0$, declared to be the line
+at infinity; parallel lines are lines meeting on line $0$. By the Folkman--Lawrence topological
+representation theorem~\cite{fl,bjorner}, projective arrangements of pseudolines correspond to simple
+rank-$3$ oriented matroids. We encode a chirotope $\chi$ on the triples of $\{0,\dots,n\}$ with values
+in $\{+,-,0\}$ and impose:
+\begin{itemize}
+\item $\chi$ is alternating;
+\item every pair of elements lies in a triple with $\chi \ne 0$ (distinct pseudolines);
+\item the zero triples form a simple rank-$3$ matroid: if $abc$ and $abd$ are dependent, so are
+  $acd$ and $bcd$;
+\item the $3$-term Grassmann--Pl\"ucker relations: for every $a$ and $x_1,\dots,x_4$, the products
+  $\chi(a,x_1,x_2)\chi(a,x_3,x_4)$, $-\chi(a,x_1,x_3)\chi(a,x_2,x_4)$, $\chi(a,x_1,x_4)\chi(a,x_2,x_3)$
+  are all zero or include both signs.
+\end{itemize}
+A support that is a matroid together with the $3$-term relations characterises chirotopes
+\cite[Thm.~3.6.2]{bjorner}.
+
+\paragraph{Bounded triangles.} For non-parallel lines $a,b$, the vertex $a \cap b$ lies on side
+$s_{ab}(d) = \chi(a,b,d)\,\chi(a,b,0)$ of a line $d$; the factor $\chi(a,b,0)$ normalises the vertex by
+the line at infinity. Lines $a,b,c$ bound a triangular face exactly when they are pairwise
+non-parallel, $\chi(a,b,c) \ne 0$, and no other line $d$ gives two of the three vertices opposite
+nonzero sides: such a $d$ would meet the open triangle, and a $d$ that meets it must do so.
+
+\paragraph{Encoding.} Variables encode $\chi$, the vertex sides and an indicator $T_{abc}$ for each
+triple of lines; $T_{abc}$ implies the face conditions, and a sequential counter requires at least
+$K$ indicators to be true. Only this direction is needed: an arrangement with $K$ triangles gives a
+satisfying assignment, so an unsatisfiable instance excludes all arrangements of $n$ pseudolines,
+hence of $n$ lines, with $K$ bounded triangles. Symmetry breaking fixes $T_{123}$ (relabelling) and
+the orientation of each element ($\chi(0,1,2)=+$, $\chi(0,1,e)\in\{+,0\}$ for $e\ge 3$,
+$\chi(0,2,e)=+$ when $\chi(0,1,e)=0$, and $\chi(1,2,3)=+$); every reorientation class contains an
+element meeting these conditions.
+
+\section{Validation}
+
+For $3 \le n \le 7$ the model is satisfiable at $K = K(n)$ and unsatisfiable at $K = K(n)+1$, with
+$K(n) = 1, 2, 5, 7, 11$, matching OEIS A006066. These runs cover non-simple arrangements, so they
+confirm the values for all arrangements of up to $7$ pseudolines. Runs for $n = 8, 9, 10$ and the
+simple case of $n = 11$ (which must reproduce Savchuk's result) are in progress.
+
+\section{Status and plan}
+
+The instance for $n = 11$, $K = 33$ over all arrangements is the target. If it is unsatisfiable,
+an LRAT or DRAT certificate checked by an independent checker will establish $a(11) = 32$ and the
+bound for $n = 11$. If it is satisfiable, the solution is a pseudoline arrangement with $33$ bounded
+triangles, which must then be straightened, or shown non-stretchable, and checked exactly. Sound
+redundant constraints from Section~2 (no vertex of multiplicity above $4$ unless compensated,
+charging of doubly used segments) may be needed for the solver.
+
+\section*{How this work was done}
+This draft, the model and the code were prepared by Claude Opus 5.5, an AI model, working for Papex
+Labs; a person at Papex Labs reviews and signs each version. The code was written from the published
+statements of the sources, not from the tools of~\cite{savchuk}. Solvers: Kissat 4.0.4 and CaDiCaL
+3.0.1. Code and results will be released with the first version that states a result.
+
+\begin{thebibliography}{9}
+\bibitem{bjorner} A.~Bj\"orner, M.~Las Vergnas, B.~Sturmfels, N.~White, G.~M.~Ziegler,
+  \emph{Oriented Matroids}, 2nd ed., Cambridge University Press, 1999.
+\bibitem{cb} G.~Cl\'ement and J.~Bader, \emph{Tighter upper bound for the number of Kobon
+  triangles}, unpublished draft, 2007. \url{https://oeis.org/A006066/a006066.pdf}
+\bibitem{fl} J.~Folkman and J.~Lawrence, Oriented matroids, \emph{J. Combin. Theory Ser. B} 25
+  (1978) 199--236.
+\bibitem{oeis} OEIS Foundation, Sequence A006066, \url{https://oeis.org/A006066}, comments and
+  edit history as of 27 October 2026.
+\bibitem{savchuk} P.~Savchuk, Constructing optimal Kobon triangle arrangements via table encoding,
+  SAT solving, and heuristic straightening, arXiv:2507.07951v2, 2026.
+\end{thebibliography}
+\end{document}
