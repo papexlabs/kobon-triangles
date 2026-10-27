@@ -44,7 +44,7 @@ class CNF:
         self.clauses.append(lits)
 
 
-def build(n, K, simple=False):
+def build(n, K, simple=False, case_b=False):
     f = CNF()
     E = range(n + 1)
     nz, pos = {}, {}
@@ -181,7 +181,20 @@ def build(n, K, simple=False):
         f.add()  # impossible
 
     # symmetry breaking
-    if n >= 3:
+    if case_b:
+        # Case B (see notes/CASES.md): lines 1, 2, 3 meet at one point, the two sectors of that
+        # point between lines 1 and 2 are triangles with outer lines 4 and 5, and some sector
+        # between lines 2 and 3 is a triangle.
+        f.add(-NZ(1, 2, 3))
+        f.add(T[(1, 2, 4)])
+        f.add(T[(1, 2, 5)])
+        f.add(*[T[tuple(sorted((2, 3, z)))] for z in range(4, n + 1)])
+        f.add(P(0, 1, 2))
+        f.add(P(1, 2, 4))
+        for e in range(3, n + 1):
+            f.add(-M(0, 1, e))
+            f.add(NZ(0, 1, e), P(0, 2, e))
+    elif n >= 3:
         f.add(T[(1, 2, 3)])
         f.add(P(0, 1, 2))
         f.add(P(1, 2, 3))
@@ -200,7 +213,8 @@ def write_dimacs(f, out):
 if __name__ == "__main__":
     n, K = int(sys.argv[1]), int(sys.argv[2])
     simple = "--simple" in sys.argv
-    f, T, nz, pos = build(n, K, simple)
+    case_b = "--case-b" in sys.argv
+    f, T, nz, pos = build(n, K, simple, case_b)
     write_dimacs(f, sys.stdout)
     # variable map for decoding
     with open(sys.argv[sys.argv.index("--map") + 1] if "--map" in sys.argv else "/dev/null", "w") as mf:
