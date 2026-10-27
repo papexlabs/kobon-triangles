@@ -39,3 +39,32 @@ Orientation normalisation in case B: chi(0,1,2) = +, chi(0,1,e) in {+,0}, chi(0,
 chi(0,1,e) = 0, chi(1,2,4) = + (flip line 1 together with every line e >= 2).
 
 Status: argument written 2026-10-27 by Claude Opus 5.5; needs a human check.
+
+## Redundant constraints (--redundant), same argument per line
+
+For a line a: t_a = triangles with a side on a, p_a = lines parallel to a. Every side of a
+triangle is one segment; a segment is a side of at most one triangle on each side of a, and of two
+only if an endpoint has multiplicity >= 3 (item 2). Line a has n - 2 - p_a - sum_{v on a}(m_v - 2)
+segments, so
+
+    t_a <= n - 2 - p_a + sum_{v on a, m_v >= 3} (delta_{v,a} - (m_v - 2)),
+
+with delta_{v,a} <= 2 the segments of a at v that are sides of two triangles. For m_v >= 4 the term
+is <= 0 and is dropped. At a point v = a∩b∩c of multiplicity exactly 3, a segment of a at v is a
+side of two triangles only if both sectors next to its ray are triangles with corner v, one between
+a and b and one between a and c (item 4). With N_ab = #{x : T(a,b,x)} (<= 2 at a multiple point),
+delta_{v,a} <= [N_ab >= 1 and N_ac >= 1] + [N_ab >= 2 and N_ac >= 2]. The model has
+e_abc (exact triple point), u1, u2 for these brackets, and per line
+
+    t_a + p_a + E_a <= n - 2 + U_a          (R1)
+
+Summed over lines with 3K <= 3T = sum_a t_a:
+
+    2 #(parallel pairs) + 3 #(exact triple points) <= U + n(n - 2) - 3K      (R1 global)
+
+R2: T(a,b,c) has its corner at a∩b in a sector bounded by a and b; two such triangles cannot share
+a sector; there are 4 such sectors at a simple vertex and 2 when a third line passes through it.
+
+Checks: src/validate_fixed.py builds the model without symmetry breaking for random straight-line
+arrangements (most with concurrent triples and parallels), fixes their chirotope, and asks for
+K = (triangles counted geometrically) and K + 1; with and without --redundant.

@@ -1,0 +1,81 @@
+  0 n=4 triangles=0 concurrent_triples=4 parallel_pairs=0 K=count:SAT K=count+1:UNSAT ok
+  1 n=8 triangles=9 concurrent_triples=2 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+  2 n=8 triangles=7 concurrent_triples=2 parallel_pairs=2 K=count:SAT K=count+1:UNSAT ok
+  3 n=6 triangles=6 concurrent_triples=2 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+  4 n=8 triangles=7 concurrent_triples=11 parallel_pairs=2 K=count:SAT K=count+1:UNSAT ok
+  5 n=6 triangles=4 concurrent_triples=2 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+  6 n=6 triangles=6 concurrent_triples=1 parallel_pairs=2 K=count:SAT K=count+1:UNSAT ok
+  7 n=7 triangles=4 concurrent_triples=10 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+  8 n=7 triangles=9 concurrent_triples=4 parallel_pairs=0 K=count:SAT K=count+1:UNSAT ok
+  9 n=8 triangles=5 concurrent_triples=2 parallel_pairs=4 K=count:SAT K=count+1:UNSAT ok
+ 10 n=4 triangles=1 concurrent_triples=0 parallel_pairs=1 K=count:SAT K=count+1:UNSAT simple:SAT/UNSAT ok
+ 11 n=6 triangles=4 concurrent_triples=2 parallel_pairs=0 K=count:SAT K=count+1:UNSAT ok
+ 12 n=5 triangles=0 concurrent_triples=10 parallel_pairs=0 K=count:SAT K=count+1:UNSAT ok
+ 13 n=7 triangles=10 concurrent_triples=3 parallel_pairs=0 K=count:SAT K=count+1:UNSAT ok
+ 14 n=4 triangles=2 concurrent_triples=1 parallel_pairs=0 K=count:SAT K=count+1:UNSAT ok
+ 15 n=8 triangles=6 concurrent_triples=5 parallel_pairs=9 K=count:SAT K=count+1:UNSAT ok
+ 16 n=6 triangles=3 concurrent_triples=2 parallel_pairs=3 K=count:SAT K=count+1:UNSAT ok
+ 17 n=4 triangles=0 concurrent_triples=1 parallel_pairs=3 K=count:SAT K=count+1:UNSAT ok
+ 18 n=5 triangles=3 concurrent_triples=1 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 19 n=4 triangles=1 concurrent_triples=1 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 20 n=5 triangles=1 concurrent_triples=1 parallel_pairs=3 K=count:SAT K=count+1:UNSAT ok
+ 21 n=8 triangles=5 concurrent_triples=4 parallel_pairs=7 K=count:SAT K=count+1:UNSAT ok
+ 22 n=7 triangles=7 concurrent_triples=2 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 23 n=5 triangles=2 concurrent_triples=1 parallel_pairs=3 K=count:SAT K=count+1:UNSAT ok
+ 24 n=8 triangles=6 concurrent_triples=1 parallel_pairs=3 K=count:SAT K=count+1:UNSAT ok
+ 25 n=5 triangles=2 concurrent_triples=1 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 26 n=7 triangles=8 concurrent_triples=6 parallel_pairs=0 K=count:SAT K=count+1:UNSAT ok
+ 27 n=6 triangles=5 concurrent_triples=4 parallel_pairs=0 K=count:SAT K=count+1:UNSAT ok
+ 28 n=6 triangles=1 concurrent_triples=1 parallel_pairs=4 K=count:SAT K=count+1:UNSAT ok
+ 29 n=6 triangles=4 concurrent_triples=1 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 30 n=4 triangles=1 concurrent_triples=1 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 31 n=8 triangles=5 concurrent_triples=1 parallel_pairs=4 K=count:SAT K=count+1:UNSAT ok
+ 32 n=8 triangles=7 concurrent_triples=4 parallel_pairs=4 K=count:SAT K=count+1:UNSAT ok
+ 33 n=7 triangles=7 concurrent_triples=2 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 34 n=6 triangles=5 concurrent_triples=4 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 35 n=4 triangles=1 concurrent_triples=1 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 36 n=6 triangles=4 concurrent_triples=1 parallel_pairs=0 K=count:SAT K=count+1:UNSAT ok
+ 37 n=8 triangles=11 concurrent_triples=1 parallel_pairs=0 K=count:SAT K=count+1:UNSAT ok
+ 38 n=5 triangles=2 concurrent_triples=0 parallel_pairs=2 K=count:SAT K=count+1:UNSAT simple:SAT/UNSAT ok
+ 39 n=6 triangles=5 concurrent_triples=1 parallel_pairs=2 K=count:SAT K=count+1:UNSAT ok
+ 40 n=5 triangles=1 concurrent_triples=1 parallel_pairs=3 K=count:SAT K=count+1:UNSAT ok
+ 41 n=5 triangles=3 concurrent_triples=2 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 42 n=8 triangles=7 concurrent_triples=1 parallel_pairs=3 K=count:SAT K=count+1:UNSAT ok
+ 43 n=4 triangles=2 concurrent_triples=0 parallel_pairs=0 K=count:SAT K=count+1:UNSAT simple:SAT/UNSAT ok
+ 44 n=5 triangles=3 concurrent_triples=4 parallel_pairs=0 K=count:SAT K=count+1:UNSAT ok
+ 45 n=6 triangles=6 concurrent_triples=2 parallel_pairs=0 K=count:SAT K=count+1:UNSAT ok
+ 46 n=5 triangles=3 concurrent_triples=1 parallel_pairs=0 K=count:SAT K=count+1:UNSAT ok
+ 47 n=5 triangles=2 concurrent_triples=4 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 48 n=7 triangles=7 concurrent_triples=4 parallel_pairs=0 K=count:SAT K=count+1:UNSAT ok
+ 49 n=6 triangles=5 concurrent_triples=4 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 50 n=4 triangles=1 concurrent_triples=0 parallel_pairs=1 K=count:SAT K=count+1:UNSAT simple:SAT/UNSAT ok
+ 51 n=4 triangles=1 concurrent_triples=1 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 52 n=8 triangles=9 concurrent_triples=2 parallel_pairs=3 K=count:SAT K=count+1:UNSAT ok
+ 53 n=6 triangles=4 concurrent_triples=1 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 54 n=5 triangles=3 concurrent_triples=1 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 55 n=4 triangles=1 concurrent_triples=1 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 56 n=8 triangles=10 concurrent_triples=2 parallel_pairs=0 K=count:SAT K=count+1:UNSAT ok
+ 57 n=4 triangles=1 concurrent_triples=1 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 58 n=7 triangles=3 concurrent_triples=5 parallel_pairs=7 K=count:SAT K=count+1:UNSAT ok
+ 59 n=7 triangles=6 concurrent_triples=5 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 60 n=6 triangles=5 concurrent_triples=1 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 61 n=6 triangles=3 concurrent_triples=2 parallel_pairs=3 K=count:SAT K=count+1:UNSAT ok
+ 62 n=7 triangles=5 concurrent_triples=4 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 63 n=5 triangles=2 concurrent_triples=2 parallel_pairs=3 K=count:SAT K=count+1:UNSAT ok
+ 64 n=6 triangles=4 concurrent_triples=1 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 65 n=5 triangles=2 concurrent_triples=1 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 66 n=5 triangles=1 concurrent_triples=1 parallel_pairs=3 K=count:SAT K=count+1:UNSAT ok
+ 67 n=7 triangles=4 concurrent_triples=3 parallel_pairs=4 K=count:SAT K=count+1:UNSAT ok
+ 68 n=5 triangles=2 concurrent_triples=0 parallel_pairs=1 K=count:SAT K=count+1:UNSAT simple:SAT/UNSAT ok
+ 69 n=7 triangles=8 concurrent_triples=2 parallel_pairs=0 K=count:SAT K=count+1:UNSAT ok
+ 70 n=7 triangles=5 concurrent_triples=0 parallel_pairs=1 K=count:SAT K=count+1:UNSAT simple:SAT/UNSAT ok
+ 71 n=6 triangles=3 concurrent_triples=3 parallel_pairs=3 K=count:SAT K=count+1:UNSAT ok
+ 72 n=8 triangles=9 concurrent_triples=1 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 73 n=8 triangles=7 concurrent_triples=1 parallel_pairs=0 K=count:SAT K=count+1:UNSAT ok
+ 74 n=8 triangles=10 concurrent_triples=5 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 75 n=7 triangles=9 concurrent_triples=1 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 76 n=8 triangles=7 concurrent_triples=5 parallel_pairs=4 K=count:SAT K=count+1:UNSAT ok
+ 77 n=7 triangles=8 concurrent_triples=4 parallel_pairs=0 K=count:SAT K=count+1:UNSAT ok
+ 78 n=7 triangles=6 concurrent_triples=4 parallel_pairs=1 K=count:SAT K=count+1:UNSAT ok
+ 79 n=7 triangles=4 concurrent_triples=6 parallel_pairs=6 K=count:SAT K=count+1:UNSAT ok
+trials=80 nonsimple=74 with_parallels=61 mismatches=0

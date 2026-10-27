@@ -1,3 +1,5 @@
 build/
 papers/
 paper/*.pdf
+tools/
+results/proofs/

@@ -24,7 +24,7 @@ Symmetry breaking (sound): T(1,2,3) holds (relabelling); reorientation is fixed 
 chi(0,1,e) in {+,0} for e >= 2, chi(0,1,2) = +, chi(0,2,e) = + when chi(0,1,e) = 0 (e >= 3),
 and chi(1,2,3) = +.
 
-Usage: python3 kobon_cnf.py N K [--simple] > out.cnf
+Usage: python3 kobon_cnf.py N K [--simple | --case-b] [--redundant] [--lex] > out.cnf
 """
 
 import itertools
@@ -44,7 +44,7 @@ class CNF:
         self.clauses.append(lits)
 
 
-def build(n, K, simple=False, case_b=False):
+def build(n, K, simple=False, case_b=False, sym=True, redundant=False, lex=False):
     f = CNF()
     E = range(n + 1)
     nz, pos = {}, {}
@@ -175,13 +175,20 @@ def build(n, K, simple=False, case_b=False):
             # s[i][j] -> prev_same or prev_less
             if prev_less is not True:
                 f.add(-s[i][j], *( [prev_same] if prev_same else [] ), prev_less)
-    if K <= m:
+    if K <= 0:
+        pass
+    elif K <= m:
         f.add(s[m][K])
     else:
         f.add()  # impossible
 
+    if redundant:
+        add_redundant(f, n, K, simple, T, NZ)
+
     # symmetry breaking
-    if case_b:
+    if not sym:
+        pass
+    elif case_b:
         # Case B (see notes/CASES.md): lines 1, 2, 3 meet at one point, the two sectors of that
         # point between lines 1 and 2 are triangles with outer lines 4 and 5, and some sector
         # between lines 2 and 3 is a triangle.
@@ -201,8 +208,166 @@ def build(n, K, simple=False, case_b=False):
         for e in range(3, n + 1):
             f.add(-M(0, 1, e))
             f.add(NZ(0, 1, e), P(0, 2, e))
+    if sym and lex:
+        # Lines with no special role can be relabelled freely: 4..n in case A, 6..n in case B.
+        # For each transposition (i, i+1) of such lines require chi <=_lex chi o (i i+1) over
+        # all triples in sorted order, with - < 0 < +. Every relabelling keeps the other
+        # constraints, so the lexicographically smallest relabelling of a solution is a solution.
+        first = 6 if case_b else 4
+        triples = list(itertools.combinations(E, 3))
+        for i in range(first, n):
+            sw = {i: i + 1, i + 1: i}
+            eq = None  # None = true
+            for t in triples:
+                if i not in t and i + 1 not in t:
+                    continue
+                x = (P(*t), M(*t), NZ(*t))
+                st = tuple(sw.get(v, v) for v in t)
+                y = (P(*st), M(*st), NZ(*st))  # chi o sigma at t
+                pre = [-eq] if eq else []
+                f.add(*pre, -x[0], y[0])  # x = + -> y = +
+                f.add(*pre, -y[1], x[1])  # y = - -> x = -
+                nxt = f.var()
+                f.add(*pre, -x[0], -y[0], nxt)
+                f.add(*pre, -x[1], -y[1], nxt)
+                f.add(*pre, x[2], y[2], nxt)
+                eq = nxt
     return f, T, nz, pos
 
+
+def totalizer(f, lits, cap):
+    """Unary count of lits, capped: out[j-1] <-> at least j of lits are true (j = 1..cap)."""
+    if len(lits) == 1:
+        return [lits[0]]
+    mid = len(lits) // 2
+    a = totalizer(f, lits[:mid], cap)
+    b = totalizer(f, lits[mid:], cap)
+    out = [f.var() for _ in range(min(len(a) + len(b), cap))]
+    for i in range(len(a) + 1):
+        for j in range(len(b) + 1):
+            if i + j >= 1:  # a_i and b_j -> out_{min(i+j, cap)}
+                lits_up = ([-a[i - 1]] if i else []) + ([-b[j - 1]] if j else [])
+                f.add(*lits_up, out[min(i + j, len(out)) - 1])
+            k = i + j + 1
+            if k <= len(out):  # out_k -> a_{i+1} or b_{j+1}
+                lits_dn = ([a[i]] if i < len(a) else []) + ([b[j]] if j < len(b) else [])
+                f.add(-out[k - 1], *lits_dn)
+    return out
+
+
+def add_redundant(f, n, K, simple, T, NZ):
+    """Constraints implied by the counting argument (notes/CASES.md); sound for every
+    arrangement of pseudolines, so they remove no solution.
+
+    R1 (per line a). Let t_a be the number of triangles with a side on a and p_a the number of
+    lines parallel to a. A triangle uses one segment of a as a side; a segment is a side of at most
+    one triangle on each side of a, and of two only if an endpoint has multiplicity >= 3. Line a
+    has n - 2 - p_a - sum_{v on a}(m_v - 2) segments, so
+        t_a <= n - 2 - p_a + sum_{v on a, m_v >= 3} (delta_{v,a} - (m_v - 2)),
+    where delta_{v,a} <= 2 counts the segments of a at v that are sides of two triangles. A term
+    with m_v >= 4 is <= 0 and is dropped. At a point v = a∩b∩c of multiplicity exactly 3 (e_abc),
+    a segment of a at v is a side of two triangles only if both sectors next to it are
+    triangles, one between a and b and one between a and c, with corner v. With N_ab the number
+    of triangles T(a, b, x), delta_{v,a} <= u1 + u2 where u1 -> N_ab, N_ac >= 1 and
+    u2 -> N_ab, N_ac >= 2. So t_a + p_a + E_a <= n - 2 + U_a, with E_a the exact triple points on
+    a and U_a the sum of the u's on a; at most (n - 1) // 2 triple points lie on a.
+    R1 global. Summing over lines, 3K <= 3T = sum_a t_a, so P + E <= U + n(n - 2) - 3K with
+    P = 2 #(parallel pairs), E = 3 #(exact triple points), U = sum of all u's (capped counts).
+    R2 (per pair a, b). A triangle T(a, b, c) has its corner a∩b in a sector of a∩b bounded by
+    a and b, and two such triangles cannot share a sector. There are 4 such sectors if a∩b is a
+    simple vertex and 2 if a third line passes through it.
+    In the --simple model there are no triple points and the per-line bound is t_a <= n - 2.
+    """
+    lines = list(range(1, n + 1))
+
+    def Tl(a, b, c):
+        return T[tuple(sorted((a, b, c)))]
+
+    def par(a, b):
+        return -NZ(a, b, 0)
+
+    tmax = (n - 1) // 2
+
+    if simple:
+        for a in lines:
+            others = [x for x in lines if x != a]
+            tri = [Tl(a, b, c) for b, c in itertools.combinations(others, 2)]
+            out = totalizer(f, tri + [par(a, x) for x in others], n - 1)
+            if len(out) >= n - 1:
+                f.add(-out[n - 2])  # t_a + p_a <= n - 2
+            lower = 3 * K - (n - 1) * (n - 2)
+            if lower > len(out):
+                f.add()  # more than n - 2 triangles on a: impossible
+            elif lower >= 1:
+                f.add(out[lower - 1])  # the other lines carry at most (n - 1)(n - 2) sides
+    else:
+        # e_abc <- a, b, c meet at a finite point and no fourth line passes through it
+        # (three parallel lines are concurrent at infinity; NZ(a, b, 0) excludes them)
+        e = {}
+        for a, b, c in itertools.combinations(lines, 3):
+            v = f.var()
+            f.add(NZ(a, b, c), -NZ(a, b, 0),
+                  *[-NZ(a, b, d) for d in lines if d not in (a, b, c)], v)
+            e[(a, b, c)] = v
+
+        def atleast(w, a, b, k):  # w -> at least k of T(a, b, x)
+            xs = [x for x in lines if x not in (a, b)]
+            if k == 1:
+                f.add(-w, *[Tl(a, b, x) for x in xs])
+            else:
+                for x in xs:
+                    f.add(-w, *[Tl(a, b, y) for y in xs if y != x])
+
+        all_u, cost = [], []
+        for a in lines:
+            others = [x for x in lines if x != a]
+            pairs = list(itertools.combinations(others, 2))
+            us = []
+            for b, c in pairs:
+                eabc = e[tuple(sorted((a, b, c)))]
+                u1, u2 = f.var(), f.var()
+                f.add(-u1, eabc)
+                f.add(-u2, u1)
+                atleast(u1, a, b, 1); atleast(u1, a, c, 1)
+                atleast(u2, a, b, 2); atleast(u2, a, c, 2)
+                us += [u1, u2]
+            lhs = ([Tl(a, b, c) for b, c in pairs] + [par(a, x) for x in others]
+                   + [e[tuple(sorted((a, b, c)))] for b, c in pairs])
+            out = totalizer(f, lhs, n - 1 + 2 * tmax)
+            ben = totalizer(f, us, 2 * tmax)
+            if len(out) >= n - 1 + 2 * tmax:
+                f.add(-out[n - 2 + 2 * tmax])
+            for j in range(1, 2 * tmax + 1):
+                if n - 2 + j <= len(out):
+                    f.add(-out[n - 2 + j - 1], ben[j - 1])  # lhs >= n-2+j -> U_a >= j
+            all_u += us
+            cost += [par(a, x) for x in others]
+        for t in e.values():
+            cost += [t, t, t]
+        cap = 3 * n
+        slack = n * (n - 2) - 3 * K
+        costs = totalizer(f, cost, cap)
+        bens = totalizer(f, all_u, cap)
+        if slack < 0:
+            if -slack > len(bens):
+                f.add()
+            else:
+                f.add(bens[-slack - 1])
+        for j in range(1, len(costs) + 1):
+            need = j - slack
+            if 1 <= need <= len(bens):
+                f.add(-costs[j - 1], bens[need - 1])  # P + E >= j -> U >= j - slack
+
+    # R2
+    for a, b in itertools.combinations(lines, 2):
+        cs = [c for c in lines if c not in (a, b)]
+        mp = f.var()  # a third line passes through a∩b (only this direction is needed)
+        for x in cs:
+            f.add(NZ(a, b, x), mp)
+        for sub in itertools.combinations(cs, 5):
+            f.add(*[-Tl(a, b, c) for c in sub])
+        for sub in itertools.combinations(cs, 3):
+            f.add(-mp, *[-Tl(a, b, c) for c in sub])
 
 def write_dimacs(f, out):
     out.write(f"p cnf {f.nv} {len(f.clauses)}\n")
@@ -214,7 +379,9 @@ if __name__ == "__main__":
     n, K = int(sys.argv[1]), int(sys.argv[2])
     simple = "--simple" in sys.argv
     case_b = "--case-b" in sys.argv
-    f, T, nz, pos = build(n, K, simple, case_b)
+    redundant = "--redundant" in sys.argv
+    lex = "--lex" in sys.argv
+    f, T, nz, pos = build(n, K, simple, case_b, redundant=redundant, lex=lex)
     write_dimacs(f, sys.stdout)
     # variable map for decoding
     with open(sys.argv[sys.argv.index("--map") + 1] if "--map" in sys.argv else "/dev/null", "w") as mf:
