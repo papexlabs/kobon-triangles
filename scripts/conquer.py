@@ -18,6 +18,7 @@ import os
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from functools import lru_cache
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -38,6 +39,16 @@ def latest(results_path):
 
 def log(msg):
     print(msg, flush=True)
+
+
+@lru_cache(maxsize=32)
+def node_cnf(cube_cnf):
+    return read_cnf(cube_cnf)
+
+
+def solve(cube_cnf, cube, d, i, limit):
+    # the node's CNF (3.6 MB) is read when its sub-cube starts, not held for every open node
+    return solve_cube(*node_cnf(cube_cnf), cube, d, i, limit, True, True)
 
 
 def split(node_dir, cnf_path, cube, depth):
@@ -107,21 +118,23 @@ def main():
                     return
                 nodes.append((cube_cnf, sub, d))
         last = level == levels
+        limit = 0 if last else timeout
         tasks = []
         for cube_cnf, sub, d in nodes:
-            nv, nc, body = read_cnf(cube_cnf)
+            # on a restart, a cube that already ran out of at least this limit stays UNKNOWN
             done = {i for i, r in latest(os.path.join(d, "results.jsonl")).items()
-                    if r["status"] in ("UNSAT", "SAT")}
+                    if r["status"] in ("UNSAT", "SAT")
+                    or (limit and r["status"] == "UNKNOWN" and r["secs"] >= limit)}
             for i, c in enumerate(read_cubes(sub)):
                 if i not in done:
-                    tasks.append((d, (nv, nc, body), c, i))
+                    tasks.append((d, cube_cnf, c, i))
         log(f"level {level}: solving {len(tasks)} sub-cubes"
-            f" ({'no limit' if last else f'limit {timeout} s'})")
+            f" ({f'limit {limit} s' if limit else 'no limit'})")
         files = {}
         sat = False
         with ThreadPoolExecutor(workers) as ex:
-            futs = {ex.submit(solve_cube, *hdr, c, d, i, 0 if last else timeout, True, True): d
-                    for d, hdr, c, i in tasks}
+            futs = {ex.submit(solve, cube_cnf, c, d, i, limit): d
+                    for d, cube_cnf, c, i in tasks}
             for fut in as_completed(futs):
                 d = futs[fut]
                 rec = fut.result()

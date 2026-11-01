@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kobon 11</title>
+<style>
+  :root {
+    --bg: #f5f5f7; --card: #ffffff; --text: #1d1d1f; --muted: #6e6e73; --line: #e3e3e8;
+    --track: #ececf0; --green: #1f9d55; --amber: #d98a00; --blue: #0a6cff; --red: #d70015;
+    --todo: #dcdce2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --card: #1c1c1e; --text: #f5f5f7; --muted: #98989d; --line: #2c2c2e;
+      --track: #2c2c2e; --green: #30d158; --amber: #ffb340; --blue: #409cff; --red: #ff453a;
+      --todo: #3a3a3c;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased;
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 48px; }
+  header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+  h1 { font-size: 28px; line-height: 1.15; margin: 0; letter-spacing: -0.02em; }
+  .sub { color: var(--muted); margin-top: 4px; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px;
+    background: var(--card); border: 1px solid var(--line); font-weight: 600; font-size: 13px; white-space: nowrap; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .pill.run .dot { background: var(--green); animation: pulse 2s ease-in-out infinite; }
+  .pill.stop .dot { background: var(--red); }
+  .pill.done .dot { background: var(--green); }
+  @keyframes pulse { 50% { opacity: .35; } }
+  @media (prefers-reduced-motion: reduce) { .pill.run .dot { animation: none; } }
+  .card { background: var(--card); border-radius: 18px; padding: 20px; margin-bottom: 12px; }
+  .alert { background: var(--red); color: #fff; font-weight: 600; display: none; }
+  .label { font-size: 13px; font-weight: 600; color: var(--muted); }
+  .big { font-size: 48px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; margin: 4px 0 12px; }
+  .bar { height: 12px; border-radius: 999px; background: var(--track); overflow: hidden; display: flex; }
+  .bar span { display: block; height: 100%; transition: width .6s ease; }
+  .meta { color: var(--muted); margin-top: 10px; }
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
+  .tile { background: var(--card); border-radius: 18px; padding: 16px; }
+  .tile b { display: block; font-size: 26px; letter-spacing: -0.02em; }
+  .tile small { color: var(--muted); font-size: 13px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(22px, 1fr)); gap: 5px; margin-top: 12px; }
+  .cell { aspect-ratio: 1; border-radius: 5px; background: var(--todo); }
+  .cell.closed { background: var(--green); }
+  .cell.open { background: var(--amber); }
+  .cell.sat, .cell.failed { background: var(--red); }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 12px; color: var(--muted); font-size: 13px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  .workers { margin-top: 8px; }
+  .w { display: grid; grid-template-columns: 9.5em 1fr 6.5em; align-items: center; gap: 12px; padding: 7px 0;
+    border-top: 1px solid var(--line); font-size: 14px; }
+  .w:first-child { border-top: 0; }
+  .w .bar { height: 6px; }
+  .w .t { text-align: right; color: var(--muted); }
+  ol.steps { list-style: none; margin: 8px 0 0; padding: 0; }
+  ol.steps li { display: grid; grid-template-columns: 22px 1fr; gap: 12px; padding: 8px 0; }
+  .mark { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--todo); margin-top: 1px;
+    display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #fff; }
+  .steps .ok .mark { background: var(--green); border-color: var(--green); }
+  .steps .now .mark { border-color: var(--blue); }
+  .steps .now .mark::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
+  .steps b { font-weight: 600; }
+  .steps .d { color: var(--muted); font-size: 14px; }
+  footer { color: var(--muted); font-size: 13px; margin-top: 16px; text-align: center; }
+  @media (max-width: 560px) {
+    h1 { font-size: 24px; }
+    .big { font-size: 40px; }
+    .card { padding: 16px; }
+    .tiles { gap: 8px; }
+    .tile { padding: 12px; }
+    .tile b { font-size: 20px; }
+    .w { grid-template-columns: 8em 1fr 3.5em; gap: 8px; }
+    .lim { display: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>Kobon · 11 doğru</h1>
+      <div class="sub">33 üçgenin imkânsız olduğunu gösteren hesap</div>
+    </div>
+    <span class="pill" id="pill"><span class="dot"></span><span id="pillText">Bağlanıyor</span></span>
+  </header>
+
+  <div class="card alert" id="alert"></div>
+
+  <section class="card">
+    <div class="label" id="levelLabel">1. tur</div>
+    <div class="big" id="pct">–</div>
+    <div class="bar" id="mainBar"></div>
+    <div class="meta" id="mainMeta"></div>
+  </section>
+
+  <div class="tiles">
+    <div class="tile"><small>İmkânsız, sertifikalı</small><b id="tUnsat">–</b></div>
+    <div class="tile"><small>Sonraki tura kalan</small><b id="tOpen">–</b></div>
+    <div class="tile"><small>33 üçgen veren</small><b id="tSat">–</b></div>
+  </div>
+
+  <section class="card">
+    <div class="label" id="gridLabel">Zor parçalar</div>
+    <div class="grid" id="grid"></div>
+    <div class="legend">
+      <span><i style="background:var(--green)"></i>Kapandı</span>
+      <span><i style="background:var(--amber)"></i>Bir kısmı sonraki tura kaldı</span>
+      <span><i style="background:var(--blue)"></i>Çözülüyor</span>
+      <span><i style="background:var(--todo)"></i>Sırada</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="label">Şu an çözülenler</div>
+    <div class="workers" id="workers"></div>
+  </section>
+
+  <section class="card">
+    <div class="label">Aşamalar</div>
+    <ol class="steps" id="steps"></ol>
+  </section>
+
+  <footer id="foot"></footer>
+</main>
+
+<script>
+const nf = new Intl.NumberFormat("tr-TR");
+const pf = new Intl.NumberFormat("tr-TR", { style: "percent", maximumFractionDigits: 1 });
+const $ = (id) => document.getElementById(id);
+
+function hours(s) {
+  const h = Math.round(s / 3600);
+  if (h < 1) return "1 saatten az";
+  if (h < 48) return `~${h} saat`;
+  return `~${Math.floor(h / 24)} gün ${h % 24} saat`;
+}
+function clock(s) {
+  s = Math.round(s);
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), x = String(s % 60).padStart(2, "0");
+  return h ? `${h}:${String(m).padStart(2, "0")}:${x}` : `${m}:${x}`;
+}
+function ago(s) {
+  if (s < 60) return "az önce";
+  if (s < 3600) return `${Math.floor(s / 60)} dk önce`;
+  return `${Math.floor(s / 3600)} sa ${Math.floor((s % 3600) / 60)} dk önce`;
+}
+function bar(el, parts) {
+  el.innerHTML = parts.map(([w, c]) => `<span style="width:${(w * 100).toFixed(2)}%;background:var(${c})"></span>`).join("");
+}
+
+function render(s) {
+  const lv = s.levels.slice().reverse().find((l) => l.phase === "solving" || l.phase === "splitting")
+    || s.levels.slice().reverse().find((l) => l.phase === "done") || s.levels[0];
+  const total = lv.total || 1;
+  const frac = lv.done / total;
+
+  const pill = $("pill");
+  pill.className = "pill " + (s.alert ? "stop" : s.finished ? "done" : s.running ? "run" : "stop");
+  $("pillText").textContent = s.alert ? "Dikkat" : s.finished ? "Bitti" : s.running ? "Çalışıyor" : "Durdu";
+
+  const al = $("alert");
+  al.style.display = s.alert ? "block" : "none";
+  al.textContent = s.alert ? `Dikkat: ${s.alert}` : "";
+
+  $("levelLabel").textContent = `${lv.level}. tur` + (lv.phase === "splitting" ? " · parçalar bölünüyor" : lv.phase === "done" ? " · bitti" : "");
+  $("pct").textContent = pf.format(frac);
+  bar($("mainBar"), [[lv.unsat / total, "--green"], [lv.unknown / total, "--amber"], [(lv.sat + lv.failed) / total, "--red"]]);
+  let meta = `${nf.format(lv.done)} / ${nf.format(lv.total)} küçük parça`;
+  if (lv.phase === "solving" && lv.eta_s != null)
+    meta += ` · bu tur için ${hours(lv.eta_s)} (kaba tahmin, son biten zor parçaların hızına göre)`;
+  $("mainMeta").textContent = meta;
+  document.title = `${pf.format(frac)} · Kobon 11`;
+
+  $("tUnsat").textContent = nf.format(lv.unsat);
+  $("tOpen").textContent = nf.format(lv.unknown);
+  $("tSat").textContent = nf.format(lv.sat);
+
+  $("gridLabel").textContent = `${nf.format(lv.nodes.length)} zor parça · her biri ~64 küçük parçaya bölündü`;
+  $("grid").innerHTML = lv.nodes.map((n) => {
+    const style = n.state === "running"
+      ? ` style="background:linear-gradient(to top, var(--blue) ${(100 * n.done / n.n).toFixed(0)}%, var(--todo) 0)"`
+      : "";
+    const tip = `${n.name}: ${n.done}/${n.n}` + (n.unknown ? `, ${n.unknown} sonraki tura` : "");
+    return `<div class="cell ${n.state}" title="${tip}"${style}></div>`;
+  }).join("");
+
+  $("workers").innerHTML = s.workers.length
+    ? s.workers.map((w) => {
+        const f = w.limit ? Math.min(1, w.secs / w.limit) : 0;
+        return `<div class="w"><span>${w.node} · parça ${w.cube}</span>`
+          + `<div class="bar"><span style="width:${(f * 100).toFixed(1)}%;background:var(${f > 0.85 ? "--amber" : "--blue"})"></span></div>`
+          + `<span class="t">${clock(w.secs)}<span class="lim">${w.limit ? " / " + clock(w.limit) : ""}</span></span></div>`;
+      }).join("")
+    : `<div class="meta">Şu an çalışan çözücü yok.</div>`;
+
+  const L = s.levels, f = s.first;
+  const state = (l) => (l.phase === "done" || l.phase === "skipped" ? "ok" : l.phase === "waiting" ? "" : "now");
+  const carry = L[0].phase === "done" ? L[0].open_after : L[0].unknown;
+  const carry2 = L[1].phase === "done" ? L[1].open_after : L[1].unknown;
+  const steps = [
+    ["ok", "Basit durum", "Hiçbir üç doğru aynı noktadan geçmiyor. Bitti, sertifika denetlendi."],
+    ["ok", "Yıldızlı durum · ilk geçiş", `${nf.format(f.total)} parça: ${nf.format(f.unsat)} kapandı, ${nf.format(f.unknown)} zor parça bölündü.`],
+    [state(L[0]), "1. tur", `${nf.format(L[0].total)} küçük parça, her biri en fazla 30 dakika.`],
+    [state(L[1]), "2. tur", `30 dakikaya sığmayanlar yeniden bölünür. Şu ana kadar ${nf.format(carry)} küçük parça.`],
+    [state(L[2]), "3. tur", L[1].phase === "waiting" ? "Hâlâ açık kalanlar süre sınırı olmadan çözülür."
+      : `Hâlâ açık kalanlar süre sınırı olmadan çözülür. Şu ana kadar ${nf.format(carry2)} küçük parça.`],
+    [s.finished && !s.alert ? "ok" : "", "Sonuç", "Hepsi kapanırsa 11 doğruyla 33 üçgen imkânsız. Sonra modelin insan kontrolü."],
+  ];
+  $("steps").innerHTML = steps.map(([c, t, d]) =>
+    `<li class="${c}"><span class="mark">${c === "ok" ? "✓" : ""}</span><div><b>${t}</b><div class="d">${d}</div></div></li>`).join("");
+
+  $("foot").textContent = (s.last_result ? `Son sonuç ${ago(s.now - s.last_result)}` : "")
+    + ` · toplam işlemci süresi ${nf.format(Math.round(s.cpu_h))} saat · 10 saniyede bir yenilenir`;
+}
+
+async function tick() {
+  try {
+    const r = await fetch("/status.json", { cache: "no-store" });
+    render(await r.json());
+  } catch (e) {
+    $("pill").className = "pill";
+    $("pillText").textContent = "Bağlantı yok";
+  }
+}
+tick();
+setInterval(tick, 10000);
+</script>
+</body>
+</html>
