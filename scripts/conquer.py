@@ -15,6 +15,7 @@ Usage: python3 conquer.py CNF ICNF DIR [--workers W] [--timeout S] [--depth D] [
 
 import json
 import os
+import resource
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -88,6 +89,12 @@ def main():
     timeout = arg("--timeout", 900, int)
     depth = arg("--depth", 6, int)
     levels = arg("--levels", 3, int)
+    # each worker holds several pipes; 180 workers crossed the default limit of 1024 (EMFILE)
+    soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+    try:
+        resource.setrlimit(resource.RLIMIT_NOFILE, (max(soft, min(hard, 65536)), hard))
+    except (ValueError, OSError):
+        pass
 
     # frontier: (parent cnf, cubes file, results dir) whose UNKNOWN cubes get split
     frontier = [(cnf, icnf, top)]
