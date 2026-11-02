@@ -3,6 +3,7 @@
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage[hidelinks]{hyperref}
 \setlength{\emergencystretch}{3em}
+\newcommand{\doi}[1]{\href{https://doi.org/#1}{\nolinkurl{doi:#1}}}
 
 \newtheorem{lemma}{Lemma}
 \newtheorem{proposition}[lemma]{Proposition}
@@ -312,7 +313,9 @@ The proof rests on the following, which a reader can check separately.
   only if its latest record is a verified UNSAT, or if it was split with a verified cover and all
   its sub-cubes are closed.
 \end{enumerate}
-The result records do not store a hash of the formula they refer to. The script
+The code, the cube files, all logs and the hashes are at
+\url{https://github.com/papexlabs/kobon-triangles}. The result records do not store a hash of the
+formula they refer to. The script
 \texttt{recheck.py} therefore rebuilds every node formula from the published top formula and the
 cubes on its path, re-solves chosen leaves with streamed LRAT checks and re-checks the covers on
 their paths. Leaf proofs were checked as they were produced and not stored, so re-checking all of
@@ -335,28 +338,28 @@ by a mathematician, and this version has not been peer reviewed.
 
 \begin{thebibliography}{9}
 \bibitem{cadical} A.~Biere, T.~Faller, K.~Fazekas, M.~Fleury, N.~Froleyks, F.~Pollitt, CaDiCaL~2.0,
-  in \emph{Computer Aided Verification (CAV 2024)}, LNCS 14681, Springer, 2024.
+  in \emph{Computer Aided Verification (CAV 2024)}, LNCS 14681, Springer, 2024. \doi{10.1007/978-3-031-65627-9_7}
 \bibitem{bjorner} A.~Bj\"orner, M.~Las Vergnas, B.~Sturmfels, N.~White, G.~M.~Ziegler,
-  \emph{Oriented Matroids}, 2nd ed., Cambridge University Press, 1999.
+  \emph{Oriented Matroids}, 2nd ed., Cambridge University Press, 1999. ISBN 978-0-521-77750-6.
 \bibitem{cakelpr} Y.~K.~Tan, M.~J.~H.~Heule, M.~O.~Myreen, cake\_lpr: verified propagation
   redundancy checking in CakeML, in \emph{Tools and Algorithms for the Construction and Analysis of
-  Systems (TACAS 2021)}, LNCS 12652, Springer, 2021.
+  Systems (TACAS 2021)}, LNCS 12652, Springer, 2021. \doi{10.1007/978-3-030-72013-1_12}
 \bibitem{cb} G.~Cl\'ement and J.~Bader, \emph{Tighter upper bound for the number of Kobon
   triangles}, unpublished draft, 2007. \url{https://oeis.org/A006066/a006066.pdf}
 \bibitem{lrat} L.~Cruz-Filipe, M.~J.~H.~Heule, W.~A.~Hunt Jr., M.~Kaufmann, P.~Schneider-Kamp,
   Efficient certified RAT verification, in \emph{Automated Deduction (CADE-26)}, LNCS 10395,
-  Springer, 2017.
+  Springer, 2017. \doi{10.1007/978-3-319-63046-5_14}
 \bibitem{fl} J.~Folkman and J.~Lawrence, Oriented matroids, \emph{J. Combin. Theory Ser. B} 25
-  (1978) 199--236.
+  (1978) 199--236. \doi{10.1016/0095-8956(78)90039-4}
 \bibitem{cnc} M.~J.~H.~Heule, O.~Kullmann, S.~Wieringa, A.~Biere, Cube and conquer: guiding CDCL
   SAT solvers by lookaheads, in \emph{Hardware and Software: Verification and Testing (HVC 2011)},
-  LNCS 7261, Springer, 2012.
+  LNCS 7261, Springer, 2012. \doi{10.1007/978-3-642-34188-5_8}
 \bibitem{oeis} OEIS Foundation, Sequence A006066, \url{https://oeis.org/A006066}, comments and
   edit history as of 1 November 2026.
 \bibitem{savchuk} P.~Savchuk, Constructing optimal Kobon triangle arrangements via table encoding,
   SAT solving, and heuristic straightening, arXiv:2507.07951v2, 2026.
 \bibitem{drattrim} N.~Wetzler, M.~J.~H.~Heule, W.~A.~Hunt Jr., DRAT-trim: efficient checking and
   trimming using expressive clausal proofs, in \emph{Theory and Applications of Satisfiability
-  Testing (SAT 2014)}, LNCS 8561, Springer, 2014.
+  Testing (SAT 2014)}, LNCS 8561, Springer, 2014. \doi{10.1007/978-3-319-09284-3_31}
 \end{thebibliography}
 \end{document}
