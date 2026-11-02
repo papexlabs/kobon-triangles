@@ -321,8 +321,28 @@ cubes on its path, re-solves chosen leaves with streamed LRAT checks and re-chec
 their paths. Leaf proofs were checked as they were produced and not stored, so re-checking all of
 case~B means re-running the leaves, about $2{,}000$ CPU hours; any subset can be re-run on its own.
 From the published files we re-solved $100$ random leaves (with a recorded time of at most
-$300$\,s) and re-checked the $162$ covers on their paths, including the top split; all were
-verified.
+$300$\,s) and re-checked the $162$ covers on their paths, including the top split. We also
+re-solved all $124$ leaves of the subtree that was closed through extra splits, and re-checked the
+$6$ covers on its path. All were verified.
+
+\paragraph{Fingerprints.} The SHA-256 hashes below fix the exact data this version refers to. All
+of it is in commit \texttt{300e0fe777d0a4291a4b02e990afe87f6f74e740} of the repository.
+
+\smallskip
+\noindent{\footnotesize
+\begin{tabular}{@{}p{5.4cm}l@{}}
+Case A formula & \texttt{f153fdb9b2c01d94fe8797b9dab9986296f3c9891e5f1607c5b2620f2f4d56d2}\\
+Case B formula & \texttt{f6c143c271f7bce4ed9d65495e7e045c253b70401c50551b08e20a563a918d2b}\\
+Cubes of the top split & \texttt{9b665d2d8813ef45d624b62bd14a1cd7adde290d1d9406037f840e8c145b34f9}\\
+Cover check of the top split & \texttt{55895f383b9486f71b186f9fabf48f0257c169ebb789fb11b66dda836096758b}\\
+Hashes of the case B tree's 3,298 files & \texttt{8209bd3441a4fe632bfffbe5a57662eff237ad4c8a6bea33c8dcb901182879e8}\\
+\end{tabular}}
+
+\smallskip
+\noindent The formulas are the output of \texttt{kobon\_cnf.py} with the options
+\texttt{11 33 --simple --redundant --lex} and \texttt{11 33 --case-b --lex}. The other three files
+are \nolinkurl{build/k11B_lex_d8.icnf}, \nolinkurl{results/cubes_k11B_lex_d8.cover.out} and
+\nolinkurl{results/cubes_k11B_lex_d8.sha256}.
 
 \section*{How this work was done}
 The model, the code, the computation and this paper were prepared by Claude Opus 5.5, an AI model,
