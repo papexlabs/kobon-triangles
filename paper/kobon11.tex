@@ -2,16 +2,18 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage[hidelinks]{hyperref}
+\setlength{\emergencystretch}{3em}
 
 \newtheorem{lemma}{Lemma}
-\newtheorem{proposition}{Proposition}
+\newtheorem{proposition}[lemma]{Proposition}
+\newtheorem{theorem}[lemma]{Theorem}
 \theoremstyle{definition}
-\newtheorem{definition}{Definition}
+\newtheorem{definition}[lemma]{Definition}
 \theoremstyle{remark}
-\newtheorem{remark}{Remark}
+\newtheorem{remark}[lemma]{Remark}
 
-\title{Kobon triangles beyond simple arrangements:\\ a complete SAT model and the case of eleven lines\\[4pt]
-\large Working draft, version 0 (27 October 2026)}
+\title{Eleven lines cannot form 33 Kobon triangles:\\ a checked SAT proof over all pseudoline arrangements\\[4pt]
+\large Version 1, 2 November 2026}
 \author{Papex Labs}
 \date{}
 
@@ -20,132 +22,341 @@
 
 \begin{abstract}
 The Kobon triangle problem asks for the largest number $K(n)$ of bounded triangular faces in an
-arrangement of $n$ lines in the plane. The classical bound $K(n) \le \lfloor n(n-2)/3 \rfloor$ is
-proved by counting segments, an argument that assumes every segment is a side of at most one
-triangle. That assumption holds in simple arrangements but fails when three or more lines meet at a
-point. In October 2026 the values $a(11)$ to $a(17)$ were removed from OEIS A006066 after a
-counterexample to the lemma that extended the argument to all arrangements. We describe a SAT model
-whose solutions are exactly the affine arrangements of $n$ pseudolines, simple or not, together with
-a set of their bounded triangular faces, and we validate it by reproducing $K(n)$ for $3 \le n \le 7$
-over all arrangements. The model is designed to decide whether some arrangement of $11$ lines,
-simple or not, has $33$ bounded triangles. This version reports the model, its validation and the
-status of the computation; it states no result for $n = 11$ yet.
+arrangement of $n$ lines in the plane. For $n = 11$ the best known arrangements have $32$ triangles
+and the classical counting bound allows $33$. In October 2026 the value $a(11)$ was removed from
+OEIS A006066, because the lemma that extends the counting bound to arrangements in which three or
+more lines meet at a point has a counterexample. We show that no arrangement of $11$ pseudolines,
+simple or not, has $33$ bounded triangles; hence $K(11) = 32$. A counting argument reduces every
+arrangement with at least $n(n-2)/3$ triangles to two cases: simple arrangements, and arrangements
+in which three concurrent lines carry three particular triangles. Each case is a SAT instance over
+rank-$3$ chirotopes. The simple case is refuted by a single LRAT proof checked with
+\texttt{lrat-check}. The other case is refuted by a cube-and-conquer tree with $67{,}614$ leaves,
+each refuted by an LRAT proof that was checked as it was produced, and $1{,}094$ splits whose
+covers were checked in the same way. The computation took about $2{,}540$ CPU hours.
 \end{abstract}
 
 \section{The question}
 
 For $n$ lines in the real affine plane, let $K(n)$ be the largest number of bounded faces that are
-triangles. Honma found an arrangement of $11$ lines with $32$ triangles, and the counting bound gives
-$33$. For simple arrangements of $11$ pseudolines meeting the bound (\emph{perfect} arrangements),
-Savchuk~\cite{savchuk} showed by SAT that $33$ triangles are impossible. The reduction of the general
-case to simple perfect arrangements rested on Lemmas~1 and~2 of Cl\'ement and Bader~\cite{cb}. In
-2026 Parpalak and Utkin pointed out a counterexample to Step~3 of Lemma~1: in the arrangement formed
-by the sides and medians of a triangle, the centroid is a vertex of six pairs of triangles sharing a
-side~\cite{oeis}. On 9 October 2026 Savchuk removed $a(11)$ to $a(17)$ from OEIS A006066 and recorded
-this reason~\cite{oeis}.
+triangles. Honma and Kabanovitch found arrangements of $11$ lines with $32$ triangles~\cite{oeis},
+and Tamura's counting bound $\lfloor n(n-2)/3 \rfloor$, proved for simple arrangements, gives
+$33$. For simple
+arrangements of $11$ pseudolines meeting this bound, Savchuk~\cite{savchuk} showed by SAT that $33$
+triangles are impossible. The reduction of the general case to simple arrangements rested on
+Lemmas~1 and~2 of Cl\'ement and Bader~\cite{cb}. Parpalak and Utkin pointed out a counterexample to
+Step~3 of Lemma~1: in the arrangement formed by the sides and medians of a triangle, the centroid is
+a vertex of six pairs of triangles sharing a side~\cite{oeis}. On 9 October 2026 Savchuk removed
+$a(11)$ to $a(17)$ from OEIS A006066 and recorded this reason~\cite{oeis}. The draft of Cl\'ement
+and Bader also states that Tamura's bound ``directly follows from the proof of Lemma~1''~\cite{cb},
+so for arrangements with multiple points the bound itself was open.
 
-The draft of Cl\'ement and Bader states that Tamura's bound ``directly follows from the proof of
-Lemma~1''~\cite{cb}. So for arrangements in which three or more lines meet at a point, both the
-value $a(11)$ and the bound $33$ are open as far as these sources go.
+\begin{theorem}\label{thm:main}
+No arrangement of $11$ pseudolines in the affine plane has $33$ or more bounded triangular faces.
+Hence $K(11) = 32$.
+\end{theorem}
 
-\section{Why non-simple arrangements escape the counting argument}
+Here an arrangement of pseudolines is the affine part of a projective arrangement of pseudolines,
+one of which is taken as the line at infinity (Section~\ref{sec:split}); every pseudoline meets the
+line at infinity once. Straight-line arrangements are of this kind, so the theorem covers them,
+simple or not. Families of curves that merely cross pairwise at most once are not covered. Section~\ref{sec:split} reduces the theorem to two cases, Section~\ref{sec:model} encodes each
+case as a SAT instance, and Section~\ref{sec:computation} reports the checked refutations.
+Section~\ref{sec:trust} lists what the proof rests on.
 
-A \emph{vertex} is a point where at least two lines meet; its multiplicity $m_v$ is the number of
-lines through it. A \emph{segment} is a bounded piece of a line between two consecutive vertices
-on it. Each side of a bounded triangular face is exactly one segment: a line through an interior
-point of a side would cross into the triangle.
+\section{Segments, sectors and the case split}\label{sec:split}
 
-\begin{lemma}\label{lem:simple}
-If a segment $PQ$ is a side of two triangular faces, then $m_P \ge 3$ or $m_Q \ge 3$.
+An affine arrangement of $n$ pseudolines comes from a projective arrangement of $n+1$ pseudolines
+by declaring one of them the line at infinity; two lines are \emph{parallel} when they meet on it.
+Parallelism is an equivalence relation, with classes of sizes $q$. A \emph{vertex} is a point of the
+affine plane on at least two lines; its multiplicity $m_v$ is the number of lines through it. A
+\emph{segment} is a bounded piece of a line between two consecutive vertices on it. At a vertex $v$
+the $m_v$ lines leave along $2m_v$ rays, which divide a small disc around $v$ into $2m_v$
+\emph{sectors}; two sectors are \emph{opposite} when they lie between the same two lines. A face
+with $v$ on its boundary meets exactly one sector at $v$. A sector is \emph{triangular} if the face
+it meets is a bounded triangle; then $v$ is a corner of that triangle. Let $T$ be the number of
+bounded triangular faces.
+
+\begin{lemma}\label{lem:segments}
+Each side of a bounded triangular face is a single segment, and each segment is a side of at most
+two such faces, one on each side of its line. If a segment $PQ$ is a side of two of them, then
+$m_P \ge 3$ or $m_Q \ge 3$.
 \end{lemma}
 \begin{proof}
-Let $PQ$ lie on line $L$. A triangle on one side of $L$ is bounded by $L$, a line $A$ through $P$
-and a line $B$ through $Q$, with apex $A \cap B$ on that side; a triangle on the other side uses
-lines $A'$ through $P$ and $B'$ through $Q$, with apex on the other side. If $A = A'$ and $B = B'$
-then $A$ and $B$ meet on both sides of $L$, which two lines (or pseudolines) cannot do. Hence
-$A \ne A'$ or $B \ne B'$, and $P$ or $Q$ lies on at least three lines.
+A line through an interior point of a side crosses the side there and enters the open triangle, so
+no vertex lies inside a side. On each side of a line exactly one face is adjacent to a given
+segment. Let $PQ$ lie on line $L$. A triangle on one side of $L$ with side $PQ$ is bounded by $L$, a
+line $A$ through $P$ and a line $B$ through $Q$, with apex $A \cap B$ on that side; a triangle on the
+other side uses lines $A'$ through $P$ and $B'$ through $Q$. If $A = A'$ and $B = B'$, then $A$ and
+$B$ meet on both sides of $L$, which two pseudolines cannot do. Hence $A \ne A'$ or $B \ne B'$, and
+$P$ or $Q$ lies on at least three lines.
 \end{proof}
 
-In a simple arrangement each segment is therefore a side of at most one triangle, there are at most
-$n(n-2)$ segments, and $3T \le n(n-2)$. Without simplicity, write $S$ for the number of segments and
-$D$ for the number of segments that are sides of two triangles. Then $3T \le S + D$. A vertex of
-multiplicity $m$ removes $m(m-2)$ segments compared with a simple vertex set, a class of $q$ parallel
-lines removes $q(q-1)$, and by Lemma~\ref{lem:simple} each doubly used segment can be charged to an
-endpoint of multiplicity at least $3$, which is an endpoint of at most $2m$ segments. This gives
+\begin{lemma}\label{lem:count}
+If $T > 0$, the number of segments is
 \[
-  3T \;\le\; n(n-2) \;-\; \sum_{\text{parallel classes}} q(q-1) \;-\; \sum_{v} m_v(m_v-4),
+  S \;=\; n(n-2) \;-\; \sum_{\text{parallel classes}} q(q-1) \;-\; \sum_{v} m_v(m_v-2).
 \]
-where the last sum runs over vertices with $m_v \ge 3$. A vertex of multiplicity $3$ contributes
-$+3$, so this argument alone does not even give $3T \le n(n-2)$. The triangle with its medians
-shows that doubly used segments do occur.
+\end{lemma}
+\begin{proof}
+If some line were parallel to all others, all lines would be pairwise parallel and $T = 0$. So
+every line $L$ meets the $n-1-p_L$ lines not parallel to it, where $p_L$ is the number of lines
+parallel to $L$. A vertex $v$ on $L$ accounts for $m_v - 1$ of them, so $L$ carries
+$k_L = n - 1 - p_L - \sum_{v \in L}(m_v - 2) \ge 1$ vertices and $k_L - 1$ segments. Summing over
+the lines, $\sum_L p_L = \sum q(q-1)$ and each vertex is counted on $m_v$ lines.
+\end{proof}
 
-\section{A model over all pseudoline arrangements}
+\begin{lemma}\label{lem:sectors}
+If a segment is a side of two triangular faces, then at each endpoint $v$ of the segment, both
+sectors next to the ray of $v$ along the segment are triangular.
+\end{lemma}
+\begin{proof}
+Each of the two triangles has $v$ as a corner. Near $v$ it fills the wedge between the ray along the
+segment and the ray of its other side through $v$, and since it is a face no further ray at $v$ lies
+inside that wedge. So the wedge is a sector at $v$, and the two triangles fill the two sectors on
+either side of the ray.
+\end{proof}
 
-\paragraph{Arrangements as oriented matroids.} An affine arrangement of $n$ pseudolines is a
-projective arrangement of $n+1$ pseudolines with one of them, labelled $0$, declared to be the line
-at infinity; parallel lines are lines meeting on line $0$. By the Folkman--Lawrence topological
-representation theorem~\cite{fl,bjorner}, projective arrangements of pseudolines correspond to simple
-rank-$3$ oriented matroids. We encode a chirotope $\chi$ on the triples of $\{0,\dots,n\}$ with values
-in $\{+,-,0\}$ and impose:
+For a vertex $v$ let $d_v$ be the number of rays at $v$ whose two neighbouring sectors are both
+triangular. Equivalently, $d_v$ is the number of cyclically consecutive pairs of triangular sectors
+at $v$, and $d_v \le 2m_v$.
+
+\begin{proposition}\label{prop:split}
+Let an affine arrangement of $n \ge 3$ pseudolines have $T$ bounded triangular faces with
+$3T \ge n(n-2)$. Then one of the following holds.
 \begin{itemize}
-\item $\chi$ is alternating;
-\item every pair of elements lies in a triple with $\chi \ne 0$ (distinct pseudolines);
-\item the zero triples form a simple rank-$3$ matroid: if $abc$ and $abd$ are dependent, so are
-  $acd$ and $bcd$;
-\item the $3$-term Grassmann--Pl\"ucker relations: for every $a$ and $x_1,\dots,x_4$, the products
-  $\chi(a,x_1,x_2)\chi(a,x_3,x_4)$, $-\chi(a,x_1,x_3)\chi(a,x_2,x_4)$, $\chi(a,x_1,x_4)\chi(a,x_2,x_3)$
-  are all zero or include both signs.
+\item[(A)] No two lines are parallel and no three lines pass through a common point.
+\item[(B)] After relabelling, lines $1, 2, 3$ pass through a common point; lines $1, 2, 4$ bound a
+  triangular face and lines $1, 2, 5$ bound a triangular face; and lines $2, 3, z$ bound a
+  triangular face for some $z \notin \{1, 2, 3\}$.
 \end{itemize}
-A support that is a matroid together with the $3$-term relations characterises chirotopes
-\cite[Thm.~3.6.2]{bjorner}.
+\end{proposition}
+\begin{proof}
+Since $3T \ge n(n-2) > 0$, Lemma~\ref{lem:count} applies. By Lemma~\ref{lem:segments} every
+triangle has three sides, each a segment, and a segment is a side of at most two triangles, so
+$3T \le S + D$, where $D$ is the number of segments that are sides of two triangles. By
+Lemmas~\ref{lem:segments} and~\ref{lem:sectors}, each such segment has an endpoint $v$ with
+$m_v \ge 3$, and its ray at $v$ is one of the $d_v$ rays counted at $v$; distinct segments give
+distinct rays. Hence $D \le \sum_{m_v \ge 3} d_v$. With $3T \ge n(n-2)$ and
+Lemma~\ref{lem:count},
+\[
+  \sum_{m_v \ge 3} g_v \;\ge\; \sum_{\text{parallel classes}} q(q-1) \;\ge\; 0,
+  \qquad g_v = d_v - m_v(m_v - 2),
+\]
+because vertices with $m_v = 2$ contribute nothing to the sum in Lemma~\ref{lem:count}.
 
-\paragraph{Bounded triangles.} For non-parallel lines $a,b$, the vertex $a \cap b$ lies on side
-$s_{ab}(d) = \chi(a,b,d)\,\chi(a,b,0)$ of a line $d$; the factor $\chi(a,b,0)$ normalises the vertex by
-the line at infinity. Lines $a,b,c$ bound a triangular face exactly when they are pairwise
-non-parallel, $\chi(a,b,c) \ne 0$, and no other line $d$ gives two of the three vertices opposite
-nonzero sides: such a $d$ would meet the open triangle, and a $d$ that meets it must do so.
+If no vertex has multiplicity at least $3$, the left side is $0$, so there are no parallel lines;
+three lines through a common point would be a vertex of multiplicity $3$. This is case~(A).
+
+Otherwise the left side is a non-empty sum, so some vertex $v$ with $m_v \ge 3$ has $g_v \ge 0$.
+Since $g_v \le 2m_v - m_v(m_v-2) = m_v(4 - m_v)$, either $m_v = 3$ and $d_v \ge 3$, or $m_v = 4$ and
+$d_v = 8$.
+
+Let $m_v = 3$, with six sectors in cyclic order. If all six are triangular, any four consecutive
+ones are. Otherwise the triangular sectors form $k \ge 1$ maximal runs of lengths $r_1, \dots, r_k$,
+separated by at least $k$ non-triangular sectors, and $d_v = \sum_i (r_i - 1) \le (6 - k) - k$.
+From $d_v \ge 3$ we get $k = 1$ and $r_1 \ge 4$. So four consecutive sectors $s_1, \dots, s_4$ are
+triangular. With three lines through $v$, $s_1$ and $s_4$ are opposite; call their two lines $1$
+and $2$. The sector $s_2$ shares a ray with $s_1$; name the lines so that this ray lies on line
+$2$. Then $s_2$ lies between line $2$ and the third line through $v$, call it $3$.
+
+Let $m_v = 4$ and $d_v = 8$, so all eight sectors are triangular. Take any sector, between lines
+$1$ and $2$; its opposite sector is also triangular, and the sector next to it across the ray of
+line $2$ lies between line $2$ and a third line through $v$, call it $3$.
+
+In both cases lines $1, 2, 3$ pass through $v$. A triangular sector between lines $1$ and $2$ belongs
+to a triangle with sides on $1$, $2$ and a third line $x$, so lines $1, 2, x$ bound a triangular face;
+the opposite sector gives such a line $y$. Three pairwise crossing pseudolines not through one point
+form an arrangement isomorphic to one of three lines, which has exactly one bounded face, lying in
+one of the four sectors formed at $1 \cap 2$ by lines $1$ and $2$. A triangular face with sides on
+$1, 2, x$ is that face, so the two triangles in opposite sectors have $x \ne y$; relabel them $4$
+and $5$. The triangular sector between lines $2$ and $3$ gives a triangle with sides on $2$, $3$ and
+some $z \notin \{1, 2, 3\}$. This is case~(B).
+\end{proof}
+
+\begin{remark}
+Proposition~\ref{prop:split} does not prove Tamura's bound for arrangements with multiple points;
+it shows only that an arrangement at or above the bound is simple or contains the configuration of
+case~(B). For $n = 11$, $3 \cdot 33 = 99 = n(n-2)$, so it applies.
+\end{remark}
+
+\section{The SAT model}\label{sec:model}
+
+\paragraph{Arrangements as oriented matroids.} Label the line at infinity $0$ and the lines
+$1, \dots, n$. By the Folkman--Lawrence topological representation theorem~\cite{fl,bjorner},
+projective arrangements of pseudolines correspond to simple rank-$3$ oriented matroids. We encode a
+chirotope $\chi$ on the triples of $\{0, \dots, n\}$ with values in $\{+, -, 0\}$ and impose:
+$\chi$ is alternating; every pair of elements lies in a triple with $\chi \ne 0$; the zero triples
+form a simple rank-$3$ matroid (if $abc$ and $abd$ are dependent, so are $acd$ and $bcd$); and the
+$3$-term Grassmann--Pl\"ucker relations hold: for every $a$ and $x_1, \dots, x_4$ the products
+$\chi(a,x_1,x_2)\chi(a,x_3,x_4)$, $-\chi(a,x_1,x_3)\chi(a,x_2,x_4)$ and $\chi(a,x_1,x_4)\chi(a,x_2,x_3)$
+are all zero or include both signs. A support that is a matroid together with the $3$-term
+relations characterises chirotopes~\cite[Thm.~3.6.2]{bjorner}. Lines $a, b$ are parallel when
+$\chi(a,b,0) = 0$, and lines $a, b, c$ pass through a common point when $\chi(a,b,c) = 0$.
+
+\paragraph{Bounded triangles.} For non-parallel lines $a, b$, the vertex $a \cap b$ lies on side
+$s_{ab}(d) = \chi(a,b,d)\,\chi(a,b,0)$ of a line $d$; the factor $\chi(a,b,0)$ normalises the vertex
+by the line at infinity. If lines $a, b, c$ bound a triangular face, they are pairwise non-parallel,
+$\chi(a,b,c) \ne 0$, and no other line $d$ gives two of the three vertices opposite nonzero sides,
+since such a $d$ would cross the open triangle.
 
 \paragraph{Encoding.} Variables encode $\chi$, the vertex sides and an indicator $T_{abc}$ for each
-triple of lines; $T_{abc}$ implies the face conditions, and a sequential counter requires at least
-$K$ indicators to be true. Only this direction is needed: an arrangement with $K$ triangles gives a
-satisfying assignment, so an unsatisfiable instance excludes all arrangements of $n$ pseudolines,
-hence of $n$ lines, with $K$ bounded triangles. Symmetry breaking fixes $T_{123}$ (relabelling) and
-the orientation of each element ($\chi(0,1,2)=+$, $\chi(0,1,e)\in\{+,0\}$ for $e\ge 3$,
-$\chi(0,2,e)=+$ when $\chi(0,1,e)=0$, and $\chi(1,2,3)=+$); every reorientation class contains an
-element meeting these conditions.
+triple of lines; $T_{abc}$ implies the conditions above, and a sequential counter requires at least
+$K$ indicators to be true. Only this direction is needed: an arrangement with $K$ triangles, with
+$T_{abc}$ set true exactly for its triangles, satisfies the formula. An unsatisfiable instance
+therefore excludes every arrangement of $n$ pseudolines with at least $K$ bounded triangles.
 
-\section{Validation}
+\paragraph{The two cases.} Case~A adds $\chi(a,b,c) \ne 0$ for all lines $a, b, c$. Case~B adds
+$\chi(1,2,3) = 0$, $T_{124}$, $T_{125}$ and the clause $\bigvee_{z \ge 4} T_{23z}$.
 
-For $3 \le n \le 7$ the model is satisfiable at $K = K(n)$ and unsatisfiable at $K = K(n)+1$, with
-$K(n) = 1, 2, 5, 7, 11$, matching OEIS A006066. These runs cover non-simple arrangements, so they
-confirm the values for all arrangements of up to $7$ pseudolines. Runs for $n = 8, 9, 10$ and the
-simple case of $n = 11$ (which must reproduce Savchuk's result) are in progress.
+\paragraph{Symmetry breaking.} Case~A fixes $T_{123}$. Both cases fix the orientation by
+$\chi(0,1,2) = +$; $\chi(0,1,e) \in \{+, 0\}$ for $e \ge 3$; $\chi(0,2,e) = +$ when
+$\chi(0,1,e) = 0$; and $\chi(1,2,3) = +$ in case~A, $\chi(1,2,4) = +$ in case~B. With the option
+\texttt{--lex}, the lines without a special role ($4, \dots, n$ in case~A, $6, \dots, n$ in case~B)
+are ordered: for every $i$ in that range, $\chi \le_{\mathrm{lex}} \chi \circ (i\ i{+}1)$ over all
+triples in sorted order, with $- < 0 < +$.
 
-\section{Status and plan}
+\begin{lemma}\label{lem:sym}
+Every arrangement in case~A (resp.\ B) with at least $K \ge 1$ triangles has a labelling and
+orientation that satisfies the case~A (resp.\ B) formula with all symmetry-breaking constraints.
+\end{lemma}
+\begin{proof}
+Label the lines as in Proposition~\ref{prop:split} for case~B, and so that $1, 2, 3$ bound a
+triangle for case~A. Reorienting an element (reversing a pseudoline) changes the sign of $\chi$ on
+the triples containing it and does not change the arrangement, so it keeps triangles, parallelism
+and concurrency; so does multiplying $\chi$ by $-1$. Lines $1$ and $2$ are not parallel, so
+$\chi(0,1,2) \ne 0$; multiply by $-1$ if it is negative. For $e \ge 3$ with $\chi(0,1,e) = -$,
+reverse $e$. If $\chi(0,1,e) = 0$ then $\chi(0,2,e) \ne 0$, since otherwise lines $1, 2, e$ would
+pass through one point at infinity and $1, 2$ would be parallel; reverse $e$ if it is negative.
+Reversing all of $1, \dots, n$ changes the sign of $\chi$ on triples of lines and keeps it on
+triples containing $0$; do so if $\chi(1,2,3)$ (case~A) or $\chi(1,2,4)$ (case~B) is negative,
+both being nonzero because of $T_{123}$ and $T_{124}$. All remaining constraints, including the
+counter and the case clauses, are invariant under permutations of $\{4, \dots, n\}$ (case~A) or
+$\{6, \dots, n\}$ (case~B), and the orientation constraints are stated alike for every $e \ge 3$.
+Among these relabellings the lexicographically smallest $\chi$ satisfies the \texttt{--lex}
+constraints.
+\end{proof}
 
-The instance for $n = 11$, $K = 33$ over all arrangements is the target. If it is unsatisfiable,
-an LRAT or DRAT certificate checked by an independent checker will establish $a(11) = 32$ and the
-bound for $n = 11$. If it is satisfiable, the solution is a pseudoline arrangement with $33$ bounded
-triangles, which must then be straightened, or shown non-stretchable, and checked exactly. Sound
-redundant constraints from Section~2 (no vertex of multiplicity above $4$ unless compensated,
-charging of doubly used segments) may be needed for the solver.
+\paragraph{Redundant constraints in case~A.} In case~A every segment is a side of at most one
+triangle (Lemma~\ref{lem:segments}) and each line carries $n-2$ segments. So each line $a$ is a side
+of $t_a \le n - 2$ triangles, and $\sum_a t_a = 3T \ge 3K$ gives
+$t_a \ge 3K - (n-1)(n-2)$. The option \texttt{--redundant} adds $t_a + p_a \le n - 2$ (where $p_a$
+counts lines parallel to $a$, zero in case~A) and the lower bound. For $n = 11$, $K = 33$ these
+force $t_a = 9$ for every line.
+
+\section{Computation}\label{sec:computation}
+
+\paragraph{Case A.} The instance \texttt{kobon\_cnf.py 11 33 --simple --redundant --lex} has
+$33{,}953$ variables and $227{,}427$ clauses. CaDiCaL~3.0.1~\cite{cadical} refuted it in
+$15{,}752$\,s on one core, writing an LRAT proof of $22.66$\,GB, which \texttt{lrat-check} from
+the DRAT-trim tools~\cite{drattrim,lrat} verified in $573$\,s.
+
+\paragraph{Case B.} The instance \texttt{kobon\_cnf.py 11 33 --case-b --lex} has $31{,}212$
+variables and $196{,}620$ clauses. We used cube and conquer~\cite{cnc}. The look-ahead solver
+\texttt{march\_cu} split the instance at depth $8$ into $238$ cubes. Because \texttt{march\_cu}
+drops cubes that it refutes itself, a split was accepted only after a \emph{cover check}: the
+formula together with the negations of all its cubes was refuted by CaDiCaL with an LRAT proof
+verified by \texttt{lrat-check}. Each cube was then solved by CaDiCaL with the cube's literals as
+unit clauses, its LRAT proof streamed through a named pipe into \texttt{lrat-check}; a result was
+recorded as UNSAT only when the checker reported VERIFIED. No proof was stored. A cube not solved
+within a time limit was split again at depth $6$ (at most $64$ sub-cubes) into a child node whose
+cover was checked in the same way. The limit was $900$\,s in a first pass, then $1{,}800$\,s
+(for four hours on 28 October, $600$\,s), and none at the third level. Six cubes at the third level
+ran for hours; we split them again on idle cores and kept whichever refutation finished first. Five
+were closed by their direct run, after up to five hours, and one through two further levels of
+splitting.
+
+The final tree has $1{,}094$ checked splits, counting the top one, and $67{,}614$ leaves, every one
+refuted by a verified LRAT proof; no cube is open and none is satisfiable. Leaves lie up to five
+levels below the top split. Solving the leaves took $1{,}997$ CPU hours; runs stopped at the time
+limit before their cube was split took another $543$. The work ran from 27 October 2026 on a
+ten-core laptop and from 1 November on AWS Graviton4 spot instances with $32$ and then $192$ cores;
+the cloud cost was about $22$ US dollars.
+
+\section{Validation}\label{sec:validation}
+
+The model reproduces known values over all arrangements. For $3 \le n \le 7$ it is satisfiable at
+$K = K(n)$ and unsatisfiable at $K(n) + 1$, with $K(n) = 1, 2, 5, 7, 11$. For $n = 8$, $K = 16$
+both cases are unsatisfiable with verified LRAT proofs, so $K(8) \le 15$ over all pseudoline
+arrangements, matching $K(8) = 15$. For $n = 9$, $K = 22$, simple arrangements are excluded by
+counting ($3 \cdot 22 > 63$), and case~B is unsatisfiable with a verified LRAT proof of $3.84$\,GB,
+so $K(9) = 21$ over all pseudoline arrangements.
+
+Independently of the model's face test, the script \texttt{validate\_fixed.py} draws random
+straight-line arrangements with integer coefficients, including concurrent triples and parallel
+classes, counts their bounded triangles geometrically in exact rational arithmetic, fixes the
+model's chirotope to theirs, and checks that the formula without symmetry breaking is satisfiable
+at the true count and unsatisfiable one above it. In $60$ arrangements of $4$ to $8$ lines, $50$
+non-simple and $39$ with parallel lines, there was no mismatch.
+
+\section{Proof of Theorem~\ref{thm:main} and what it rests on}\label{sec:trust}
+
+Suppose an arrangement of $11$ pseudolines has at least $33$ bounded triangles. Since
+$3 \cdot 33 = 11 \cdot 9$, Proposition~\ref{prop:split} puts it in case~A or case~B, and by
+Lemma~\ref{lem:sym} and the redundant constraints it then satisfies the corresponding formula with
+$K = 33$. Both formulas are unsatisfiable (Section~\ref{sec:computation}). With the $32$-triangle
+arrangements of Honma and Kabanovitch, $K(11) = 32$. \qed
+
+\smallskip
+The proof rests on the following, which a reader can check separately.
+\begin{enumerate}
+\item The hand arguments: Lemmas~\ref{lem:segments}--\ref{lem:sectors}, Proposition~\ref{prop:split}
+  and Lemma~\ref{lem:sym}. Proposition~\ref{prop:split} replaces the step that failed in~\cite{cb}
+  and is the part we most want checked.
+\item The model: the chirotope axioms, the face conditions and their encoding in
+  \texttt{src/kobon\_cnf.py}. That script regenerates both formulas byte for byte; their SHA-256
+  hashes are listed in the repository.
+\item \texttt{lrat-check}, which verified every refutation. CaDiCaL and \texttt{march\_cu} need
+  not be trusted. \texttt{lrat-check} is not formally verified; the case-A proof is kept, so it
+  and the covers can be re-checked with a verified checker such as \texttt{cake\_lpr}~\cite{cakelpr}.
+\item The scripts that build the leaf and cover formulas and walk the tree
+  (\texttt{run\_cubes.py}, \texttt{check\_cover.py}, \texttt{summary.py}). A cube counts as closed
+  only if its latest record is a verified UNSAT, or if it was split with a verified cover and all
+  its sub-cubes are closed.
+\end{enumerate}
+The result records do not store a hash of the formula they refer to. The script
+\texttt{recheck.py} therefore rebuilds every node formula from the published top formula and the
+cubes on its path, re-solves chosen leaves with streamed LRAT checks and re-checks the covers on
+their paths. Leaf proofs were checked as they were produced and not stored, so re-checking all of
+case~B means re-running the leaves, about $2{,}000$ CPU hours; any subset can be re-run on its own.
+From the published files we re-solved $100$ random leaves (with a recorded time of at most
+$300$\,s) and re-checked the $162$ covers on their paths, including the top split; all were
+verified.
 
 \section*{How this work was done}
-This draft, the model and the code were prepared by Claude Opus 5.5, an AI model, working for Papex
-Labs; a person at Papex Labs reviews and signs each version. The code was written from the published
-statements of the sources, not from the tools of~\cite{savchuk}. Solvers: Kissat 4.0.4 and CaDiCaL
-3.0.1. Code and results will be released with the first version that states a result.
+The model, the code, the computation and this paper were prepared by Claude Opus 5.5, an AI model,
+working for Papex Labs; a person at Papex Labs reviews and signs each version. The code was written
+from the published statements of the sources, not from the tools of~\cite{savchuk}. Solvers and
+tools: CaDiCaL 3.0.1, Kissat 4.0.4 (early runs), \texttt{march\_cu}, \texttt{lrat-check}.
+Before release, a separate Claude Opus 5.5 session, given the code and notes but not our
+conclusions, re-derived the hand arguments, tested them on $615$ random straight-line arrangements
+(many with concurrent triples, parallel lines or a triangle with its medians), checked the
+symmetry breaking on $533$ arrangements brought into normal form, audited the whole tree and
+re-solved $24$ leaves and $8$ covers from scratch. It found no error. This does not replace review
+by a mathematician, and this version has not been peer reviewed.
 
 \begin{thebibliography}{9}
+\bibitem{cadical} A.~Biere, T.~Faller, K.~Fazekas, M.~Fleury, N.~Froleyks, F.~Pollitt, CaDiCaL~2.0,
+  in \emph{Computer Aided Verification (CAV 2024)}, LNCS 14681, Springer, 2024.
 \bibitem{bjorner} A.~Bj\"orner, M.~Las Vergnas, B.~Sturmfels, N.~White, G.~M.~Ziegler,
   \emph{Oriented Matroids}, 2nd ed., Cambridge University Press, 1999.
+\bibitem{cakelpr} Y.~K.~Tan, M.~J.~H.~Heule, M.~O.~Myreen, cake\_lpr: verified propagation
+  redundancy checking in CakeML, in \emph{Tools and Algorithms for the Construction and Analysis of
+  Systems (TACAS 2021)}, LNCS 12652, Springer, 2021.
 \bibitem{cb} G.~Cl\'ement and J.~Bader, \emph{Tighter upper bound for the number of Kobon
   triangles}, unpublished draft, 2007. \url{https://oeis.org/A006066/a006066.pdf}
+\bibitem{lrat} L.~Cruz-Filipe, M.~J.~H.~Heule, W.~A.~Hunt Jr., M.~Kaufmann, P.~Schneider-Kamp,
+  Efficient certified RAT verification, in \emph{Automated Deduction (CADE-26)}, LNCS 10395,
+  Springer, 2017.
 \bibitem{fl} J.~Folkman and J.~Lawrence, Oriented matroids, \emph{J. Combin. Theory Ser. B} 25
   (1978) 199--236.
+\bibitem{cnc} M.~J.~H.~Heule, O.~Kullmann, S.~Wieringa, A.~Biere, Cube and conquer: guiding CDCL
+  SAT solvers by lookaheads, in \emph{Hardware and Software: Verification and Testing (HVC 2011)},
+  LNCS 7261, Springer, 2012.
 \bibitem{oeis} OEIS Foundation, Sequence A006066, \url{https://oeis.org/A006066}, comments and
-  edit history as of 27 October 2026.
+  edit history as of 1 November 2026.
 \bibitem{savchuk} P.~Savchuk, Constructing optimal Kobon triangle arrangements via table encoding,
   SAT solving, and heuristic straightening, arXiv:2507.07951v2, 2026.
+\bibitem{drattrim} N.~Wetzler, M.~J.~H.~Heule, W.~A.~Hunt Jr., DRAT-trim: efficient checking and
+  trimming using expressive clausal proofs, in \emph{Theory and Applications of Satisfiability
+  Testing (SAT 2014)}, LNCS 8561, Springer, 2014.
 \end{thebibliography}
 \end{document}

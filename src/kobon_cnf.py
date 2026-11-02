@@ -20,9 +20,11 @@ are pairwise non-parallel, not concurrent, and no other line d has vertex sides 
 for at least K true T variables. The converse implication is not needed: any arrangement with K
 triangles satisfies the model, so UNSAT means no arrangement has K bounded triangles.
 
-Symmetry breaking (sound): T(1,2,3) holds (relabelling); reorientation is fixed by
-chi(0,1,e) in {+,0} for e >= 2, chi(0,1,2) = +, chi(0,2,e) = + when chi(0,1,e) = 0 (e >= 3),
-and chi(1,2,3) = +.
+Symmetry breaking (sound; paper, Lemma 7). Relabelling: case A fixes T(1,2,3); case B labels
+the configuration of the case split (chi(1,2,3) = 0, T(1,2,4), T(1,2,5), some T(2,3,z)).
+Reorientation: chi(0,1,2) = +, chi(0,1,e) in {+,0} for e >= 3, chi(0,2,e) = + when
+chi(0,1,e) = 0, and chi(1,2,3) = + (case A) or chi(1,2,4) = + (case B). With --lex, the lines
+without a role (4..n in case A, 6..n in case B) satisfy chi <=_lex chi o (i i+1).
 
 Usage: python3 kobon_cnf.py N K [--simple | --case-b] [--redundant] [--lex] > out.cnf
 """

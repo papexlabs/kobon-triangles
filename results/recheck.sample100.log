@@ -1,0 +1,265 @@
+tree: 67614 leaves, 1093 splits below the top split
+re-solving 100 leaves with 9 workers
+ok   results/cubes_k11B_lex_d8/c191/c63 cube 32: UNSAT VERIFIED 17.7 s (recorded 8.4 s)
+ok   results/cubes_k11B_lex_d8/c225/c63 cube 6: UNSAT VERIFIED 120.4 s (recorded 6.0 s)
+ok   results/cubes_k11B_lex_d8/c181/c63/c42 cube 41: UNSAT VERIFIED 148.1 s (recorded 13.4 s)
+ok   results/cubes_k11B_lex_d8/c233/c45/c55 cube 29: UNSAT VERIFIED 156.6 s (recorded 15.4 s)
+ok   results/cubes_k11B_lex_d8/c200/c55/c39 cube 27: UNSAT VERIFIED 167.4 s (recorded 22.8 s)
+ok   results/cubes_k11B_lex_d8/c231/c39 cube 20: UNSAT VERIFIED 30.3 s (recorded 11.2 s)
+ok   results/cubes_k11B_lex_d8/c193/c61/c56 cube 9: UNSAT VERIFIED 1.9 s (recorded 1.5 s)
+ok   results/cubes_k11B_lex_d8/c181/c31/c54 cube 34: UNSAT VERIFIED 173.2 s (recorded 27.1 s)
+ok   results/cubes_k11B_lex_d8/c233/c34 cube 2: UNSAT VERIFIED 20.1 s (recorded 11.2 s)
+ok   results/cubes_k11B_lex_d8/c233/c29 cube 52: UNSAT VERIFIED 177.3 s (recorded 32.2 s)
+ok   results/cubes_k11B_lex_d8/c222/c28 cube 34: UNSAT VERIFIED 9.1 s (recorded 7.0 s)
+ok   results/cubes_k11B_lex_d8/c180/c42 cube 37: UNSAT VERIFIED 8.6 s (recorded 9.0 s)
+ok   results/cubes_k11B_lex_d8/c222/c27/c48 cube 36: UNSAT VERIFIED 15.2 s (recorded 10.7 s)
+ok   results/cubes_k11B_lex_d8/c221/c57/c45 cube 35: UNSAT VERIFIED 52.0 s (recorded 3.1 s)
+ok   results/cubes_k11B_lex_d8/c237/c31 cube 20: UNSAT VERIFIED 252.9 s (recorded 48.5 s)
+ok   results/cubes_k11B_lex_d8/c202/c31/c30 cube 32: UNSAT VERIFIED 18.9 s (recorded 7.9 s)
+ok   results/cubes_k11B_lex_d8/c225/c31 cube 3: UNSAT VERIFIED 114.8 s (recorded 41.2 s)
+ok   results/cubes_k11B_lex_d8/c224/c29/c47 cube 10: UNSAT VERIFIED 11.6 s (recorded 8.5 s)
+ok   results/cubes_k11B_lex_d8/c230/c31/c63 cube 16: UNSAT VERIFIED 3.0 s (recorded 3.3 s)
+ok   results/cubes_k11B_lex_d8/c225/c60/c63 cube 0: UNSAT VERIFIED 3.2 s (recorded 3.9 s)
+ok   results/cubes_k11B_lex_d8/c225/c39/c59 cube 40: UNSAT VERIFIED 84.2 s (recorded 21.2 s)
+ok   results/cubes_k11B_lex_d8/c201/c47/c47 cube 22: UNSAT VERIFIED 16.3 s (recorded 12.9 s)
+ok   results/cubes_k11B_lex_d8/c195/c57 cube 9: UNSAT VERIFIED 108.7 s (recorded 35.6 s)
+ok   results/cubes_k11B_lex_d8/c232/c51 cube 23: UNSAT VERIFIED 286.1 s (recorded 80.3 s)
+ok   results/cubes_k11B_lex_d8/c221 cube 0: UNSAT VERIFIED 10.0 s (recorded 9.7 s)
+ok   results/cubes_k11B_lex_d8/c201/c15/c62 cube 10: UNSAT VERIFIED 13.6 s (recorded 10.9 s)
+ok   results/cubes_k11B_lex_d8/c233/c42 cube 13: UNSAT VERIFIED 23.9 s (recorded 21.0 s)
+ok   results/cubes_k11B_lex_d8/c193/c62/c49 cube 2: UNSAT VERIFIED 0.4 s (recorded 0.5 s)
+ok   results/cubes_k11B_lex_d8/c236/c47 cube 9: UNSAT VERIFIED 3.9 s (recorded 3.6 s)
+ok   results/cubes_k11B_lex_d8/c233/c58/c62 cube 36: UNSAT VERIFIED 15.1 s (recorded 13.1 s)
+ok   results/cubes_k11B_lex_d8/c233/c53 cube 33: UNSAT VERIFIED 12.4 s (recorded 11.8 s)
+ok   results/cubes_k11B_lex_d8/c216 cube 21: UNSAT VERIFIED 33.5 s (recorded 33.9 s)
+ok   results/cubes_k11B_lex_d8/c200/c57/c63 cube 19: UNSAT VERIFIED 11.0 s (recorded 6.3 s)
+ok   results/cubes_k11B_lex_d8/c217/c48/c61 cube 45: UNSAT VERIFIED 113.7 s (recorded 84.4 s)
+ok   results/cubes_k11B_lex_d8/c237/c55 cube 51: UNSAT VERIFIED 117.6 s (recorded 100.2 s)
+ok   results/cubes_k11B_lex_d8/c183 cube 17: UNSAT VERIFIED 395.4 s (recorded 123.1 s)
+ok   results/cubes_k11B_lex_d8/c205/c55 cube 23: UNSAT VERIFIED 65.6 s (recorded 26.5 s)
+ok   results/cubes_k11B_lex_d8/c236/c13 cube 17: UNSAT VERIFIED 19.8 s (recorded 17.4 s)
+ok   results/cubes_k11B_lex_d8/c201/c63/c57 cube 35: UNSAT VERIFIED 3.5 s (recorded 3.2 s)
+ok   results/cubes_k11B_lex_d8/c197/c23 cube 19: UNSAT VERIFIED 25.5 s (recorded 15.1 s)
+ok   results/cubes_k11B_lex_d8/c180/c42 cube 50: UNSAT VERIFIED 132.4 s (recorded 95.8 s)
+ok   results/cubes_k11B_lex_d8/c201 cube 33: UNSAT VERIFIED 55.9 s (recorded 31.2 s)
+ok   results/cubes_k11B_lex_d8/c190/c31 cube 15: UNSAT VERIFIED 0.3 s (recorded 0.2 s)
+ok   results/cubes_k11B_lex_d8/c221/c54/c44 cube 6: UNSAT VERIFIED 2.4 s (recorded 1.7 s)
+ok   results/cubes_k11B_lex_d8/c189/c63/c47 cube 30: UNSAT VERIFIED 268.9 s (recorded 178.1 s)
+ok   results/cubes_k11B_lex_d8/c233/c58/c21 cube 55: UNSAT VERIFIED 64.9 s (recorded 45.7 s)
+ok   results/cubes_k11B_lex_d8/c193/c47/c60 cube 50: UNSAT VERIFIED 17.5 s (recorded 11.9 s)
+ok   results/cubes_k11B_lex_d8/c233/c59/c53 cube 55: UNSAT VERIFIED 112.7 s (recorded 98.4 s)
+ok   results/cubes_k11B_lex_d8/c192/c26 cube 27: UNSAT VERIFIED 55.2 s (recorded 73.1 s)
+ok   results/cubes_k11B_lex_d8/c193/c31/c15 cube 43: UNSAT VERIFIED 337.8 s (recorded 224.6 s)
+ok   results/cubes_k11B_lex_d8/c197/c55/c63 cube 19: UNSAT VERIFIED 4.0 s (recorded 4.2 s)
+ok   results/cubes_k11B_lex_d8/c192/c23/c47 cube 33: UNSAT VERIFIED 4.3 s (recorded 4.2 s)
+ok   results/cubes_k11B_lex_d8/c175/c63 cube 47: UNSAT VERIFIED 26.7 s (recorded 22.7 s)
+ok   results/cubes_k11B_lex_d8/c217/c48/c63 cube 2: UNSAT VERIFIED 0.8 s (recorded 1.4 s)
+ok   results/cubes_k11B_lex_d8/c189/c55/c31 cube 19: UNSAT VERIFIED 12.2 s (recorded 10.5 s)
+ok   results/cubes_k11B_lex_d8/c203/c59/c63 cube 61: UNSAT VERIFIED 240.5 s (recorded 192.3 s)
+ok   results/cubes_k11B_lex_d8/c217/c50/c63 cube 3: UNSAT VERIFIED 2.4 s (recorded 2.6 s)
+ok   results/cubes_k11B_lex_d8/c192/c23/c63 cube 42: UNSAT VERIFIED 26.4 s (recorded 24.7 s)
+ok   results/cubes_k11B_lex_d8/c217/c54/c62 cube 43: UNSAT VERIFIED 114.5 s (recorded 94.9 s)
+ok   results/cubes_k11B_lex_d8/c221/c54 cube 7: UNSAT VERIFIED 16.3 s (recorded 16.0 s)
+ok   results/cubes_k11B_lex_d8/c192/c38 cube 10: UNSAT VERIFIED 16.0 s (recorded 12.0 s)
+ok   results/cubes_k11B_lex_d8/c233/c58/c45 cube 45: UNSAT VERIFIED 158.2 s (recorded 148.9 s)
+ok   results/cubes_k11B_lex_d8/c230/c29 cube 20: UNSAT VERIFIED 15.4 s (recorded 14.8 s)
+ok   results/cubes_k11B_lex_d8/c225/c61/c62 cube 42: UNSAT VERIFIED 4.7 s (recorded 5.5 s)
+ok   results/cubes_k11B_lex_d8/c178 cube 50: UNSAT VERIFIED 253.8 s (recorded 151.6 s)
+ok   results/cubes_k11B_lex_d8/c217/c54/c62 cube 15: UNSAT VERIFIED 3.7 s (recorded 3.7 s)
+ok   results/cubes_k11B_lex_d8/c203/c61 cube 50: UNSAT VERIFIED 29.0 s (recorded 18.7 s)
+ok   results/cubes_k11B_lex_d8/c193/c55 cube 54: UNSAT VERIFIED 121.3 s (recorded 95.5 s)
+ok   results/cubes_k11B_lex_d8/c200/c57/c63 cube 34: UNSAT VERIFIED 11.0 s (recorded 8.9 s)
+ok   results/cubes_k11B_lex_d8/c225/c38 cube 11: UNSAT VERIFIED 65.6 s (recorded 67.4 s)
+ok   results/cubes_k11B_lex_d8/c230/c10 cube 24: UNSAT VERIFIED 5.4 s (recorded 5.1 s)
+ok   results/cubes_k11B_lex_d8/c222/c3 cube 28: UNSAT VERIFIED 3.0 s (recorded 3.4 s)
+ok   results/cubes_k11B_lex_d8/c200/c55/c63 cube 1: UNSAT VERIFIED 2.7 s (recorded 3.3 s)
+ok   results/cubes_k11B_lex_d8/c217/c48/c62 cube 60: UNSAT VERIFIED 88.3 s (recorded 88.5 s)
+ok   results/cubes_k11B_lex_d8/c203/c61 cube 58: UNSAT VERIFIED 1.3 s (recorded 1.2 s)
+ok   results/cubes_k11B_lex_d8/c233/c59/c52 cube 38: UNSAT VERIFIED 41.6 s (recorded 42.6 s)
+ok   results/cubes_k11B_lex_d8/c226/c30 cube 24: UNSAT VERIFIED 4.1 s (recorded 4.3 s)
+ok   results/cubes_k11B_lex_d8/c201/c59/c63 cube 13: UNSAT VERIFIED 2.9 s (recorded 3.2 s)
+ok   results/cubes_k11B_lex_d8/c233/c40 cube 56: UNSAT VERIFIED 22.9 s (recorded 22.4 s)
+ok   results/cubes_k11B_lex_d8/c225/c60/c47 cube 7: UNSAT VERIFIED 1.3 s (recorded 1.8 s)
+ok   results/cubes_k11B_lex_d8/c201/c63/c15/c63/c63 cube 14: UNSAT VERIFIED 73.5 s (recorded 46.5 s)
+ok   results/cubes_k11B_lex_d8/c224/c55/c61 cube 11: UNSAT VERIFIED 4.2 s (recorded 3.6 s)
+ok   results/cubes_k11B_lex_d8/c190/c14 cube 24: UNSAT VERIFIED 53.2 s (recorded 35.8 s)
+ok   results/cubes_k11B_lex_d8/c205/c31 cube 54: UNSAT VERIFIED 40.1 s (recorded 24.3 s)
+ok   results/cubes_k11B_lex_d8/c200/c51/c63 cube 30: UNSAT VERIFIED 139.0 s (recorded 144.0 s)
+ok   results/cubes_k11B_lex_d8/c193/c63/c36 cube 10: UNSAT VERIFIED 3.4 s (recorded 3.1 s)
+ok   results/cubes_k11B_lex_d8/c213/c58 cube 46: UNSAT VERIFIED 26.2 s (recorded 14.0 s)
+ok   results/cubes_k11B_lex_d8/c235/c39 cube 35: UNSAT VERIFIED 24.2 s (recorded 26.6 s)
+ok   results/cubes_k11B_lex_d8/c193/c61/c30 cube 44: UNSAT VERIFIED 31.6 s (recorded 29.5 s)
+ok   results/cubes_k11B_lex_d8/c213/c63/c63 cube 36: UNSAT VERIFIED 3.4 s (recorded 3.3 s)
+ok   results/cubes_k11B_lex_d8/c214/c48 cube 55: UNSAT VERIFIED 2.2 s (recorded 2.6 s)
+ok   results/cubes_k11B_lex_d8/c233/c59/c54 cube 44: UNSAT VERIFIED 141.8 s (recorded 153.8 s)
+ok   cover top split: cubes=238 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c175: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c175/c63: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c178: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c180: cubes=63 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c180/c42: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c181: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c181/c31: cubes=63 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c181/c31/c54: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c181/c63: cubes=63 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c181/c63/c42: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c183: cubes=62 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c189: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c189/c55: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c189/c55/c31: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c189/c63: cubes=62 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c189/c63/c47: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c190: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c190/c14: cubes=63 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c190/c31: cubes=62 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c191: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c191/c63: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c192: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c192/c23: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c192/c23/c47: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c192/c23/c63: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c192/c26: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c192/c38: cubes=57 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c193: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c193/c31: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c193/c31/c15: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c193/c47: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c193/c47/c60: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c193/c55: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c193/c61: cubes=63 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c193/c61/c30: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c193/c61/c56: cubes=62 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c193/c62: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c193/c62/c49: cubes=62 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c193/c63: cubes=57 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c193/c63/c36: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c195: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c195/c57: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c197: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c197/c23: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c197/c55: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c197/c55/c63: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c200: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c200/c51: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c200/c51/c63: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c200/c55: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c200/c55/c39: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c200/c55/c63: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c200/c57: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c200/c57/c63: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c201: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c201/c15: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c201/c15/c62: cubes=64 cover=VERIFIED
+ok   results/cubes_k11B_lex_d8/c217/c55/c31 cube 46: UNSAT VERIFIED 95.8 s (recorded 94.3 s)
+ok   cover results/cubes_k11B_lex_d8/c201/c47: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c201/c47/c47: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c201/c59: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c201/c59/c63: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c201/c63: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c201/c63/c15: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c201/c63/c15/c63: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c201/c63/c15/c63/c63: cubes=61 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c201/c63/c57: cubes=63 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c202: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c202/c31: cubes=57 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c202/c31/c30: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c203: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c203/c59: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c203/c59/c63: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c203/c61: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c205: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c205/c31: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c205/c55: cubes=63 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c213: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c213/c58: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c213/c63: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c213/c63/c63: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c214: cubes=57 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c214/c48: cubes=62 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c216: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c217: cubes=57 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c217/c48: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c217/c48/c61: cubes=62 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c217/c48/c62: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c217/c48/c63: cubes=63 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c217/c50: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c217/c50/c63: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c217/c52: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c217/c54: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c217/c54/c62: cubes=50 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c217/c55: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c217/c55/c31: cubes=63 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c221: cubes=59 cover=VERIFIED
+ok   results/cubes_k11B_lex_d8/c233/c58/c47 cube 52: UNSAT VERIFIED 206.0 s (recorded 219.9 s)
+ok   cover results/cubes_k11B_lex_d8/c221/c54: cubes=61 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c221/c54/c44: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c221/c57: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c221/c57/c45: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c222: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c222/c27: cubes=49 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c222/c27/c48: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c222/c28: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c222/c3: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c224: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c224/c29: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c224/c29/c47: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c224/c55: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c224/c55/c61: cubes=61 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c225: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c225/c31: cubes=57 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c225/c39: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c225/c38: cubes=63 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c225/c39/c59: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c225/c60: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c225/c60/c63: cubes=63 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c225/c60/c47: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c225/c61: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c225/c61/c62: cubes=58 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c225/c63: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c226: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c225/c63/c45: cubes=57 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c226/c30: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c227: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c230: cubes=63 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c230/c10: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c230/c28: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c230/c29: cubes=62 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c230/c31: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c230/c31/c63: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c231: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c231/c39: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c232: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c232/c43: cubes=59 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c232/c51: cubes=49 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c233: cubes=60 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c233/c29: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c233/c34: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c233/c40: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c233/c42: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c233/c45/c55: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c233/c45: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c233/c53: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c233/c58/c21: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c233/c58: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c233/c58/c45: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c233/c58/c47: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c233/c58/c62: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c233/c59: cubes=63 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c233/c59/c52: cubes=63 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c233/c59/c53: cubes=60 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c233/c59/c54: cubes=61 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c235: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c235/c39: cubes=61 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c236: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c236/c13: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c236/c47: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c237: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c237/c31: cubes=64 cover=VERIFIED
+ok   cover results/cubes_k11B_lex_d8/c237/c55: cubes=64 cover=VERIFIED
+ok   results/cubes_k11B_lex_d8/c225/c63/c45 cube 31: UNSAT VERIFIED 140.7 s (recorded 158.5 s)
+ok   results/cubes_k11B_lex_d8/c230/c28 cube 45: UNSAT VERIFIED 75.2 s (recorded 88.3 s)
+ok   results/cubes_k11B_lex_d8/c200 cube 36: UNSAT VERIFIED 193.6 s (recorded 164.2 s)
+ok   results/cubes_k11B_lex_d8/c232/c43 cube 54: UNSAT VERIFIED 148.2 s (recorded 226.8 s)
+ok   results/cubes_k11B_lex_d8/c227 cube 50: UNSAT VERIFIED 270.6 s (recorded 286.8 s)
+ok   results/cubes_k11B_lex_d8/c217/c52 cube 50: UNSAT VERIFIED 182.8 s (recorded 225.8 s)
+262 of 262 re-checks passed
