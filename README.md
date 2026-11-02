@@ -1,5 +1,12 @@
 # Kobon triangles: eleven lines
 
+> **Earlier result.** Roman Parpalak and Denis Utkin proved a(11) = 32 first, by exhaustive
+> enumeration: Theorem 3.12 of *Non-simple Arrangements of Lines and Pseudolines with Many
+> Triangles* (submitted to arXiv on 1 November 2026). Their enumeration output has been public since
+> September 2026 at [parpalak/kobon-even-draft](https://github.com/parpalak/kobon-even-draft). This
+> repository verifies their result by a different method: SAT, with every step checked by an
+> independent proof checker.
+
 **Result.** No arrangement of 11 pseudolines in the affine plane (straight lines included, simple
 or not: parallel lines and three or more lines through a point are allowed) has 33 or more bounded
 triangular faces. With the known 32-triangle arrangements of Honma and Kabanovitch, the Kobon
