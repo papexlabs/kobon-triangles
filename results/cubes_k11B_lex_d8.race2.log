@@ -1,0 +1,6 @@
+2026-11-02 10:19:29 target results/cubes_k11B_lex_d8/c201/c63/c15/c63 cube 63: direct pids [136568], record None, split dir exists False
+2026-11-02 10:19:29 target results/cubes_k11B_lex_d8/c217/c56/c48/c62 cube 63: direct pids [136570], record None, split dir exists False
+2026-11-02 10:19:45 split results/cubes_k11B_lex_d8/c217/c56/c48/c62/c63: 64 sub-cubes, cubes=64 cover=VERIFIED
+2026-11-02 10:19:51 split results/cubes_k11B_lex_d8/c201/c63/c15/c63/c63: 61 sub-cubes, cubes=61 cover=VERIFIED
+2026-11-02 10:19:51 solving 125 sub-cubes with 180 workers
+2026-11-02 10:35:31 CLOSED by split: results/cubes_k11B_lex_d8/c201/c63/c15/c63/c63 (all sub-cubes UNSAT VERIFIED); stopping direct run [136568]

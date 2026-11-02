@@ -2,3 +2,7 @@
 de7c073f50ba25cceb5e3e6d3316ba21fd08339d9135979e121dd24fe3f2d0fd  build/k8_16_simple.lex.cnf
 217b40af94e307602b0eb6b11102fcd8c7128b7f9aef29275bc795fcac68d516  build/k8_16_case-b.lex.cnf
 f153fdb9b2c01d94fe8797b9dab9986296f3c9891e5f1607c5b2620f2f4d56d2  build/k11_33_simple.lexred.cnf
+f6c143c271f7bce4ed9d65495e7e045c253b70401c50551b08e20a563a918d2b  build/k11_33_caseB.lex.cnf
+9b665d2d8813ef45d624b62bd14a1cd7adde290d1d9406037f840e8c145b34f9  build/k11B_lex_d8.icnf
+55895f383b9486f71b186f9fabf48f0257c169ebb789fb11b66dda836096758b  results/cubes_k11B_lex_d8.cover.out
+8209bd3441a4fe632bfffbe5a57662eff237ad4c8a6bea33c8dcb901182879e8  results/cubes_k11B_lex_d8.sha256  (case B tree: results.jsonl, sub.icnf, cover.out of every node; summary.py: ALL CLOSED, 67614 verified UNSAT leaves, 1093 splits, 2026-11-02)

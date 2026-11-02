@@ -1,0 +1,9 @@
+cubes=238 selected=8 todo=8
+{"cube": 16, "status": "UNSAT", "secs": 1.5, "len": 7, "check": "VERIFIED"}
+{"cube": 65, "status": "UNSAT", "secs": 6.6, "len": 8, "check": "VERIFIED"}
+{"cube": 30, "status": "UNSAT", "secs": 15.6, "len": 8, "check": "VERIFIED"}
+{"cube": 34, "status": "UNSAT", "secs": 16.4, "len": 8, "check": "VERIFIED"}
+{"cube": 145, "status": "UNSAT", "secs": 329.3, "len": 8, "check": "VERIFIED"}
+{"cube": 195, "status": "UNKNOWN", "secs": 3315.6, "len": 8}
+{"cube": 216, "status": "UNKNOWN", "secs": 3304.9, "len": 8}
+{"cube": 205, "status": "UNKNOWN", "secs": 3306.2, "len": 8}

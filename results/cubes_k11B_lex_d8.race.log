@@ -1,0 +1,19 @@
+2026-11-02 09:45:07 target results/cubes_k11B_lex_d8/c217/c56/c48 cube 62: direct pids [119955], record None, split dir exists False
+2026-11-02 09:45:07 target results/cubes_k11B_lex_d8/c189/c63/c47 cube 63: direct pids [119959], record None, split dir exists False
+2026-11-02 09:45:07 target results/cubes_k11B_lex_d8/c221/c58/c63 cube 63: direct pids [121508], record None, split dir exists False
+2026-11-02 09:45:07 target results/cubes_k11B_lex_d8/c201/c63/c15 cube 63: direct pids [127974], record None, split dir exists False
+2026-11-02 09:45:07 target results/cubes_k11B_lex_d8/c181/c63/c62 cube 59: direct pids [129394], record None, split dir exists False
+2026-11-02 09:45:07 target results/cubes_k11B_lex_d8/c181/c63/c62 cube 63: direct pids [129402], record None, split dir exists False
+2026-11-02 09:45:26 split results/cubes_k11B_lex_d8/c201/c63/c15/c63: 64 sub-cubes, cubes=64 cover=VERIFIED
+2026-11-02 09:45:27 split results/cubes_k11B_lex_d8/c217/c56/c48/c62: 64 sub-cubes, cubes=64 cover=VERIFIED
+2026-11-02 09:45:31 split results/cubes_k11B_lex_d8/c181/c63/c62/c59: 64 sub-cubes, cubes=64 cover=VERIFIED
+2026-11-02 09:45:33 split results/cubes_k11B_lex_d8/c189/c63/c47/c63: 64 sub-cubes, cubes=64 cover=VERIFIED
+2026-11-02 09:45:34 split results/cubes_k11B_lex_d8/c221/c58/c63/c63: 64 sub-cubes, cubes=64 cover=VERIFIED
+2026-11-02 09:45:37 split results/cubes_k11B_lex_d8/c181/c63/c62/c63: 64 sub-cubes, cubes=64 cover=VERIFIED
+2026-11-02 09:45:37 solving 384 sub-cubes with 174 workers
+2026-11-02 09:54:53 CLOSED by direct run: results/cubes_k11B_lex_d8/c221/c58/c63 cube 63; stopping 6 split solves
+2026-11-02 10:03:44 CLOSED by direct run: results/cubes_k11B_lex_d8/c189/c63/c47 cube 63; stopping 1 split solves
+2026-11-02 10:11:01 CLOSED by direct run: results/cubes_k11B_lex_d8/c181/c63/c62 cube 59; stopping 2 split solves
+2026-11-02 10:17:09 CLOSED by direct run: results/cubes_k11B_lex_d8/c181/c63/c62 cube 63; stopping 1 split solves
+2026-11-02 10:36:29 close_watch: results/cubes_k11B_lex_d8/c201/c63/c15 cube 63: split subtree closed; stopping direct run [127974]
+2026-11-02 10:37:29 close_watch: all targets have a conquer record: exit

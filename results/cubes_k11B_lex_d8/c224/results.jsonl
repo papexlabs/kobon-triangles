@@ -1,0 +1,64 @@
+{"cube": 0, "status": "UNSAT", "secs": 93.2, "len": 6, "check": "VERIFIED"}
+{"cube": 1, "status": "UNSAT", "secs": 114.1, "len": 6, "check": "VERIFIED"}
+{"cube": 4, "status": "UNSAT", "secs": 98.7, "len": 6, "check": "VERIFIED"}
+{"cube": 2, "status": "UNSAT", "secs": 331.2, "len": 6, "check": "VERIFIED"}
+{"cube": 6, "status": "UNSAT", "secs": 100.4, "len": 6, "check": "VERIFIED"}
+{"cube": 5, "status": "UNSAT", "secs": 201.3, "len": 6, "check": "VERIFIED"}
+{"cube": 7, "status": "UNSAT", "secs": 208.6, "len": 6, "check": "VERIFIED"}
+{"cube": 8, "status": "UNSAT", "secs": 149.4, "len": 6, "check": "VERIFIED"}
+{"cube": 3, "status": "UNSAT", "secs": 523.1, "len": 6, "check": "VERIFIED"}
+{"cube": 9, "status": "UNSAT", "secs": 212.8, "len": 6, "check": "VERIFIED"}
+{"cube": 16, "status": "UNSAT", "secs": 20.5, "len": 6, "check": "VERIFIED"}
+{"cube": 14, "status": "UNSAT", "secs": 205.7, "len": 6, "check": "VERIFIED"}
+{"cube": 18, "status": "UNSAT", "secs": 218.7, "len": 6, "check": "VERIFIED"}
+{"cube": 12, "status": "UNSAT", "secs": 628.2, "len": 6, "check": "VERIFIED"}
+{"cube": 20, "status": "UNSAT", "secs": 89.2, "len": 6, "check": "VERIFIED"}
+{"cube": 10, "status": "UNSAT", "secs": 1466.4, "len": 6, "check": "VERIFIED"}
+{"cube": 19, "status": "UNSAT", "secs": 987.7, "len": 6, "check": "VERIFIED"}
+{"cube": 24, "status": "UNSAT", "secs": 166.8, "len": 6, "check": "VERIFIED"}
+{"cube": 11, "status": "UNKNOWN", "secs": 1800.0, "len": 6}
+{"cube": 13, "status": "UNKNOWN", "secs": 1800.0, "len": 6}
+{"cube": 15, "status": "UNKNOWN", "secs": 1800.0, "len": 6}
+{"cube": 17, "status": "UNKNOWN", "secs": 1800.1, "len": 6}
+{"cube": 28, "status": "UNSAT", "secs": 444.3, "len": 6, "check": "VERIFIED"}
+{"cube": 21, "status": "UNKNOWN", "secs": 1800.0, "len": 6}
+{"cube": 22, "status": "UNKNOWN", "secs": 1800.1, "len": 6}
+{"cube": 32, "status": "UNSAT", "secs": 161.5, "len": 6, "check": "VERIFIED"}
+{"cube": 30, "status": "UNSAT", "secs": 732.3, "len": 6, "check": "VERIFIED"}
+{"cube": 23, "status": "UNKNOWN", "secs": 1800.0, "len": 6}
+{"cube": 33, "status": "UNSAT", "secs": 220.1, "len": 6, "check": "VERIFIED"}
+{"cube": 34, "status": "UNSAT", "secs": 372.4, "len": 6, "check": "VERIFIED"}
+{"cube": 25, "status": "UNSAT", "secs": 1615.6, "len": 6, "check": "VERIFIED"}
+{"cube": 36, "status": "UNSAT", "secs": 371.3, "len": 6, "check": "VERIFIED"}
+{"cube": 40, "status": "UNSAT", "secs": 74.3, "len": 6, "check": "VERIFIED"}
+{"cube": 26, "status": "UNKNOWN", "secs": 1800.0, "len": 6}
+{"cube": 35, "status": "UNSAT", "secs": 743.4, "len": 6, "check": "VERIFIED"}
+{"cube": 27, "status": "UNKNOWN", "secs": 1800.0, "len": 6}
+{"cube": 44, "status": "UNSAT", "secs": 45.9, "len": 6, "check": "VERIFIED"}
+{"cube": 41, "status": "UNSAT", "secs": 424.5, "len": 6, "check": "VERIFIED"}
+{"cube": 29, "status": "UNKNOWN", "secs": 1800.0, "len": 6}
+{"cube": 45, "status": "UNSAT", "secs": 239.4, "len": 6, "check": "VERIFIED"}
+{"cube": 37, "status": "UNSAT", "secs": 1063.1, "len": 6, "check": "VERIFIED"}
+{"cube": 31, "status": "UNKNOWN", "secs": 1800.1, "len": 6}
+{"cube": 46, "status": "UNSAT", "secs": 592.5, "len": 6, "check": "VERIFIED"}
+{"cube": 49, "status": "UNSAT", "secs": 400.3, "len": 6, "check": "VERIFIED"}
+{"cube": 52, "status": "UNSAT", "secs": 197.8, "len": 6, "check": "VERIFIED"}
+{"cube": 42, "status": "UNSAT", "secs": 1335.2, "len": 6, "check": "VERIFIED"}
+{"cube": 48, "status": "UNSAT", "secs": 804.9, "len": 6, "check": "VERIFIED"}
+{"cube": 38, "status": "UNKNOWN", "secs": 1800.1, "len": 6}
+{"cube": 39, "status": "UNKNOWN", "secs": 1800.1, "len": 6}
+{"cube": 56, "status": "UNSAT", "secs": 212.2, "len": 6, "check": "VERIFIED"}
+{"cube": 53, "status": "UNSAT", "secs": 776.2, "len": 6, "check": "VERIFIED"}
+{"cube": 43, "status": "UNKNOWN", "secs": 1800.0, "len": 6}
+{"cube": 47, "status": "UNKNOWN", "secs": 1800.0, "len": 6}
+{"cube": 50, "status": "UNKNOWN", "secs": 1800.0, "len": 6}
+{"cube": 51, "status": "UNKNOWN", "secs": 1800.0, "len": 6}
+{"cube": 57, "status": "UNSAT", "secs": 1218.8, "len": 6, "check": "VERIFIED"}
+{"cube": 58, "status": "UNSAT", "secs": 1109.0, "len": 6, "check": "VERIFIED"}
+{"cube": 60, "status": "UNSAT", "secs": 917.0, "len": 6, "check": "VERIFIED"}
+{"cube": 54, "status": "UNKNOWN", "secs": 1800.0, "len": 6}
+{"cube": 55, "status": "UNKNOWN", "secs": 1800.2, "len": 6}
+{"cube": 59, "status": "UNSAT", "secs": 1270.7, "len": 6, "check": "VERIFIED"}
+{"cube": 61, "status": "UNKNOWN", "secs": 1800.0, "len": 6}
+{"cube": 62, "status": "UNKNOWN", "secs": 1800.1, "len": 6}
+{"cube": 63, "status": "UNKNOWN", "secs": 1800.0, "len": 6}
