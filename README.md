@@ -81,3 +81,7 @@ Before release, a separate Claude Opus 5.5 session, given the code and notes but
 conclusions, re-derived the hand arguments, tested them on 615 random straight-line arrangements,
 audited the whole tree and re-solved leaves and covers from scratch; it found no error. That does
 not replace review by a mathematician.
+
+## License
+
+Code: MIT (`LICENSE`). Paper, notes, cubes, results and logs: CC BY 4.0 (`LICENSE-DATA.md`).
