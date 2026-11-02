@@ -5,7 +5,8 @@ or not: parallel lines and three or more lines through a point are allowed) has 
 triangular faces. With the known 32-triangle arrangements of Honma and Kabanovitch, the Kobon
 triangle number for 11 lines (OEIS [A006066](https://oeis.org/A006066), a(11)) is **32**.
 
-The paper is `paper/kobon11.tex`; the PDF is attached to the release. It has not been peer
+Signed record on Papex: https://papex.org/id/PXP-18B537AWDH1F/v/1 (the paper, signed by Papex Labs).
+The paper source is `paper/kobon11.tex`; the PDF is also attached to the v1 release. It has not been peer
 reviewed. The hand argument that reduces every arrangement to two SAT instances (Proposition 5,
 the case split) is the part we most want checked: a similar reduction in Clément–Bader (2007)
 has a counterexample, which is why a(11) was removed from A006066 in October 2026.
