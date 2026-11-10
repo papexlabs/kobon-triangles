@@ -23,8 +23,9 @@ triangular faces. With the known 32-triangle arrangements of Honma and Kabanovit
 triangle number for 11 lines (OEIS [A006066](https://oeis.org/A006066), a(11)) is **32**.
 
 Signed record on Papex: https://papex.org/id/PXP-18B537AWDH1F/v/1 (version 1 of the paper, signed
-by Papex Labs). The paper source is `paper/kobon11.tex` (version 2); the version 1 PDF is attached
-to the v1 release. It has not been peer reviewed. The hand argument that reduces every arrangement to two SAT instances (Proposition 5,
+by Papex Labs). The paper source is `paper/kobon11.tex` (version 2); the PDFs are attached to the
+v1 and v2 releases. Version 2 with a snapshot of this repository is archived at Zenodo:
+[10.5281/zenodo.24105026](https://doi.org/10.5281/zenodo.24105026). It has not been peer reviewed. The hand argument that reduces every arrangement to two SAT instances (Proposition 5,
 the case split) is the part we most want checked: a similar reduction in Clément–Bader (2007)
 has a counterexample, which is why a(11) was removed from A006066 in October 2026.
 
