@@ -13,8 +13,8 @@
 \theoremstyle{remark}
 \newtheorem{remark}[lemma]{Remark}
 
-\title{Eleven lines cannot form 33 Kobon triangles:\\ a checked SAT proof over all pseudoline arrangements\\[4pt]
-\large Version 1, 2 November 2026}
+\title{Eleven lines cannot form 33 Kobon triangles:\\ an independent SAT check over all pseudoline arrangements\\[4pt]
+\large Version 2, 10 November 2026}
 \author{Papex Labs}
 \date{}
 
@@ -26,14 +26,17 @@ The Kobon triangle problem asks for the largest number $K(n)$ of bounded triangu
 arrangement of $n$ lines in the plane. For $n = 11$ the best known arrangements have $32$ triangles
 and the classical counting bound allows $33$. In October 2026 the value $a(11)$ was removed from
 OEIS A006066, because the lemma that extends the counting bound to arrangements in which three or
-more lines meet at a point has a counterexample. We show that no arrangement of $11$ pseudolines,
-simple or not, has $33$ bounded triangles; hence $K(11) = 32$. A counting argument reduces every
+more lines meet at a point has a counterexample. Parpalak and Utkin then proved by exhaustive
+enumeration that no arrangement of $11$ pseudolines, simple or not, has $33$ bounded triangles, so
+$K(11) = 32$. We verify their result by a different method. A counting argument reduces every
 arrangement with at least $n(n-2)/3$ triangles to two cases: simple arrangements, and arrangements
 in which three concurrent lines carry three particular triangles. Each case is a SAT instance over
-rank-$3$ chirotopes. The simple case is refuted by a single LRAT proof checked with
-\texttt{lrat-check}. The other case is refuted by a cube-and-conquer tree with $67{,}614$ leaves,
-each refuted by an LRAT proof that was checked as it was produced, and $1{,}094$ splits whose
-covers were checked in the same way. The computation took about $2{,}540$ CPU hours.
+rank-$3$ chirotopes. The simple case is refuted by a single LRAT proof. The other case is refuted
+by a cube-and-conquer tree with $67{,}614$ leaves and $1{,}094$ splits. The proof checker of the
+original runs checked every step of a proof except the last one, the empty clause. With a corrected
+checker we re-checked the simple case, the covers of all $1{,}094$ splits and $100$ random leaves;
+for the other leaves the last step rests on the solver. The computation took about $2{,}540$ CPU
+hours.
 \end{abstract}
 
 \section{The question}
@@ -51,7 +54,7 @@ $a(11)$ to $a(17)$ from OEIS A006066 and recorded this reason~\cite{oeis}. The d
 and Bader also states that Tamura's bound ``directly follows from the proof of Lemma~1''~\cite{cb},
 so for arrangements with multiple points the bound itself was open.
 
-\begin{theorem}\label{thm:main}
+\begin{theorem}[Parpalak and Utkin~{\cite[Theorem~3.12]{pu}}]\label{thm:main}
 No arrangement of $11$ pseudolines in the affine plane has $33$ or more bounded triangular faces.
 Hence $K(11) = 32$.
 \end{theorem}
@@ -59,9 +62,24 @@ Hence $K(11) = 32$.
 Here an arrangement of pseudolines is the affine part of a projective arrangement of pseudolines,
 one of which is taken as the line at infinity (Section~\ref{sec:split}); every pseudoline meets the
 line at infinity once. Straight-line arrangements are of this kind, so the theorem covers them,
-simple or not. Families of curves that merely cross pairwise at most once are not covered. Section~\ref{sec:split} reduces the theorem to two cases, Section~\ref{sec:model} encodes each
-case as a SAT instance, and Section~\ref{sec:computation} reports the checked refutations.
-Section~\ref{sec:trust} lists what the proof rests on.
+simple or not. Families of curves that merely cross pairwise at most once are not covered.
+
+\paragraph{Earlier result.} Parpalak and Utkin proved Theorem~\ref{thm:main} before
+us~\cite[Theorem~3.12]{pu}. Their program enumerates all arrangements of pseudolines with at least
+a given number of triangles, with vertices of any multiplicity, and for $n = 11$ it finds none with
+$33$ triangles. Their enumeration output has been public since September 2026 at
+\url{https://github.com/parpalak/kobon-even-draft}. We learned of their result on 2 November 2026,
+after version~1 of this note was released, and version~1 did not cite it. This note is therefore
+an independent check of their theorem by a different method: a case split proved by hand and two
+SAT instances. As R.~Parpalak pointed out to us, the statement of
+Proposition~\ref{prop:split} can also be obtained from Roudneff's perturbation principle for
+multiple points~\cite{roudneff}, which~\cite[Lemma~3.9]{pu} carries over to the affine plane; we
+have not written out that derivation.
+
+Section~\ref{sec:split} reduces the theorem to two cases, Section~\ref{sec:model} encodes each
+case as a SAT instance, and Section~\ref{sec:computation} reports the refutations.
+Section~\ref{sec:trust} lists what the proof rests on, including which proof steps were checked by
+which checker.
 
 \section{Segments, sectors and the case split}\label{sec:split}
 
@@ -272,6 +290,17 @@ limit before their cube was split took another $543$. The work ran from 27 Octob
 ten-core laptop and from 1 November on AWS Graviton4 spot instances with $32$ and then $192$ cores;
 the cloud cost was about $22$ US dollars.
 
+\paragraph{The checker of these runs.} All runs in this section and in
+Section~\ref{sec:validation} used \texttt{lrat-check} of DRAT-trim at commit \texttt{2e3b2dc}.
+That program accepts a final empty-clause step whose hints do not end in a
+conflict~\cite{drattrim42}. For example, it accepts the proof \texttt{3 0 0} for the satisfiable
+formula with the clauses $x_1 \vee x_2$ and $\neg x_1 \vee x_2$. So in these runs every lemma of
+every proof was checked, but the last step, the derivation of the empty clause, was not: it rested
+on CaDiCaL's answer. Where this section and the next say ``verified'' or ``checked'', they mean
+it in this sense. Section~\ref{sec:trust} reports what has been checked again with a corrected
+checker. Version~1 of this note did not know of this defect and described every refutation as
+verified.
+
 \section{Validation}\label{sec:validation}
 
 The model reproduces known values over all arrangements. For $3 \le n \le 7$ it is satisfiable at
@@ -305,9 +334,25 @@ The proof rests on the following, which a reader can check separately.
 \item The model: the chirotope axioms, the face conditions and their encoding in
   \texttt{src/kobon\_cnf.py}. That script regenerates both formulas byte for byte; their SHA-256
   hashes are listed in the repository.
-\item \texttt{lrat-check}, which verified every refutation. CaDiCaL and \texttt{march\_cu} need
-  not be trusted. \texttt{lrat-check} is not formally verified; the case-A proof is kept, so it
-  and the covers can be re-checked with a verified checker such as \texttt{cake\_lpr}~\cite{cakelpr}.
+\item The proof checkers and, for one step, the solver. In the original runs
+  \texttt{lrat-check} checked every lemma of every refutation but not its final empty clause
+  (Section~\ref{sec:computation}). For this version we used a patched \texttt{lrat-check}, which
+  rejects an empty clause whose hints do not end in a conflict (\texttt{checker/} in the
+  repository), and re-checked the following.
+  \begin{itemize}
+  \item Case~A: the stored proof of $22.66$\,GB, in full (555\,s).
+  \item Case~B: the covers of all $1{,}094$ splits. Each cover formula was refuted again by
+    CaDiCaL, and the proof was accepted both by the patched \texttt{lrat-check} and by
+    \texttt{cake\_lpr}~\cite{cakelpr}, a formally verified checker.
+  \item Case~B: $100$ random leaves with a recorded time of at most $300$\,s, each solved again
+    with its proof streamed into the patched \texttt{lrat-check}.
+  \item The stored proofs for $n = 8$ of Section~\ref{sec:validation}.
+  \end{itemize}
+  All were verified. For the other $67{,}514$ leaves of case~B, and for the case-B proof for
+  $n = 9$ of Section~\ref{sec:validation}, the final step of each refutation still rests on
+  CaDiCaL~3.0.1; every earlier step was checked. \texttt{march\_cu} need not be trusted.
+  Neither version of \texttt{lrat-check} is formally verified; the case-A proof is kept and can
+  be checked with \texttt{cake\_lpr} as well.
 \item The scripts that build the leaf and cover formulas and walk the tree
   (\texttt{run\_cubes.py}, \texttt{check\_cover.py}, \texttt{summary.py}). A cube counts as closed
   only if its latest record is a verified UNSAT, or if it was split with a verified cover and all
@@ -320,13 +365,18 @@ formula they refer to. The script
 cubes on its path, re-solves chosen leaves with streamed LRAT checks and re-checks the covers on
 their paths. Leaf proofs were checked as they were produced and not stored, so re-checking all of
 case~B means re-running the leaves, about $2{,}000$ CPU hours; any subset can be re-run on its own.
-From the published files we re-solved $100$ random leaves (with a recorded time of at most
-$300$\,s) and re-checked the $162$ covers on their paths, including the top split. We also
-re-solved all $124$ leaves of the subtree that was closed through extra splits, and re-checked the
-$6$ covers on its path. All were verified.
+For version~1 we re-solved, from the published files, $100$ random leaves (with a recorded time
+of at most $300$\,s) and all $124$ leaves of the subtree that was closed through extra splits,
+and re-checked the covers on their paths. All were verified, with the unpatched checker. The
+re-checks with the patched checker listed in item~3 were done for this version; their logs are in
+\nolinkurl{results/recheck-fixed/} of the repository. The $100$ leaves of item~3 are a new random sample, not the leaves re-solved
+for version~1.
 
 \paragraph{Fingerprints.} The SHA-256 hashes below fix the exact data this version refers to. All
-of it is in commit \texttt{300e0fe777d0a4291a4b02e990afe87f6f74e740} of the repository.
+of it is in commit \texttt{300e0fe777d0a4291a4b02e990afe87f6f74e740} of the repository and is
+unchanged since version~1. The patched checker and the logs of the new re-checks are in commit
+\texttt{4d1eedb9999228a158e4dc2063b406cf632fb71e}. A snapshot of the repository with this paper is archived at Zenodo,
+\doi{10.5281/zenodo.24105026}.
 
 \smallskip
 \noindent{\footnotesize
@@ -344,19 +394,35 @@ Hashes of the case B tree's 3,298 files & \texttt{8209bd3441a4fe632bfffbe5a57662
 are \nolinkurl{build/k11B_lex_d8.icnf}, \nolinkurl{results/cubes_k11B_lex_d8.cover.out} and
 \nolinkurl{results/cubes_k11B_lex_d8.sha256}.
 
+\section*{Changes since version 1}
+Version~1 of 2 November 2026 is signed on Papex as record PXP-18B537AWDH1F,
+\url{https://papex.org/id/PXP-18B537AWDH1F/v/1}. This version is prepared as version~2 of the
+same record, \url{https://papex.org/id/PXP-18B537AWDH1F}. It differs from version~1 in three ways. (1)~It
+credits Parpalak and Utkin, who proved Theorem~\ref{thm:main} first, and presents this work as an
+independent check; the title says so. (2)~It corrects the statement that \texttt{lrat-check}
+verified every refutation: the checker of the original runs did not check the final empty clause
+(Section~\ref{sec:computation}). (3)~It reports the re-checks with a patched checker
+(Section~\ref{sec:trust}, item~3). The mathematical argument, the formulas, the cubes and the
+proof tree are unchanged.
+
 \section*{How this work was done}
 The model, the code, the computation and this paper were prepared by Claude Opus 5.5, an AI model,
 working for Papex Labs; a person at Papex Labs reviews and signs each version. The code was written
 from the published statements of the sources, not from the tools of~\cite{savchuk}. Solvers and
-tools: CaDiCaL 3.0.1, Kissat 4.0.4 (early runs), \texttt{march\_cu}, \texttt{lrat-check}.
+tools: CaDiCaL 3.0.1, Kissat 4.0.4 (early runs), \texttt{march\_cu}, \texttt{lrat-check}
+(DRAT-trim commit \texttt{2e3b2dc}; for version~2 with the patch described above) and, for
+version~2, \texttt{cake\_lpr} (tag \texttt{v1.0.0}).
 Before release, a separate Claude Opus 5.5 session, given the code and notes but not our
 conclusions, re-derived the hand arguments, tested them on $615$ random straight-line arrangements
 (many with concurrent triples, parallel lines or a triangle with its medians), checked the
 symmetry breaking on $533$ arrangements brought into normal form, audited the whole tree and
 re-solved $24$ leaves and $8$ covers from scratch. It found no error. This does not replace review
-by a mathematician, and this version has not been peer reviewed.
+by a mathematician, and this version has not been peer reviewed. The re-checks and the text
+changes of version~2 were prepared by Claude Fable~5.2, also an AI model, and reviewed and signed
+in the same way. The defect of \texttt{lrat-check} was found during an audit of a later project
+of ours that used the same checker.
 
-\begin{thebibliography}{9}
+\begin{thebibliography}{99}
 \bibitem{cadical} A.~Biere, T.~Faller, K.~Fazekas, M.~Fleury, N.~Froleyks, F.~Pollitt, CaDiCaL~2.0,
   in \emph{Computer Aided Verification (CAV 2024)}, LNCS 14681, Springer, 2024. \doi{10.1007/978-3-031-65627-9_7}
 \bibitem{bjorner} A.~Bj\"orner, M.~Las Vergnas, B.~Sturmfels, N.~White, G.~M.~Ziegler,
@@ -374,8 +440,16 @@ by a mathematician, and this version has not been peer reviewed.
 \bibitem{cnc} M.~J.~H.~Heule, O.~Kullmann, S.~Wieringa, A.~Biere, Cube and conquer: guiding CDCL
   SAT solvers by lookaheads, in \emph{Hardware and Software: Verification and Testing (HVC 2011)},
   LNCS 7261, Springer, 2012. \doi{10.1007/978-3-642-34188-5_8}
+\bibitem{drattrim42} GitHub user \texttt{haskiindahouse}, DRAT-trim issue \#42, ``lrat-check says
+  `VERIFIED' for a proof that proves nothing'', and pull request \#43, both opened on 29 September
+  2026. \url{https://github.com/marijnheule/drat-trim/issues/42}
 \bibitem{oeis} OEIS Foundation, Sequence A006066, \url{https://oeis.org/A006066}, comments and
   edit history as of 1 November 2026.
+\bibitem{pu} R.~Parpalak and D.~Utkin, Non-simple arrangements of lines and pseudolines with many
+  triangles, arXiv:2611.03096v1, 2026. Code and enumeration outputs:
+  \url{https://github.com/parpalak/nonsimple-arrangements}
+\bibitem{roudneff} J.-P.~Roudneff, The maximum number of triangles in arrangements of pseudolines,
+  \emph{J. Combin. Theory Ser. B} 66 (1996) 44--74. \doi{10.1006/jctb.1996.0006}
 \bibitem{savchuk} P.~Savchuk, Constructing optimal Kobon triangle arrangements via table encoding,
   SAT solving, and heuristic straightening, arXiv:2507.07951v2, 2026.
 \bibitem{drattrim} N.~Wetzler, M.~J.~H.~Heule, W.~A.~Hunt Jr., DRAT-trim: efficient checking and
