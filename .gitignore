@@ -10,3 +10,5 @@ results/cubes_*/**/*.cnf
 results/cubes_*/**/*.lrat
 results/cubes_*/**/*.fifo
 results/cubes_*/**/*.tmp
+checker/lrat-check
+__pycache__/

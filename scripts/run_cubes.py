@@ -3,8 +3,12 @@
 Each cube is the CNF plus the cube's literals as unit clauses. Results go to OUTDIR/results.jsonl
 (one line per cube: index, status, seconds); cubes already in that file are skipped, so the
 run can be stopped and restarted. With --proof --check, CaDiCaL writes a text LRAT proof into a
-named pipe that tools/drat-trim/lrat-check reads at the same time, so proofs never reach the
-disk; the result line records VERIFIED or FAILED. With --proof alone the proof is kept.
+named pipe that lrat-check reads at the same time, so proofs never reach the disk; the result
+line records VERIFIED or FAILED. With --proof alone the proof is kept.
+
+The checker is checker/lrat-check, built from checker/lrat-check.c (drat-trim's lrat-check with
+the empty-clause fix, see checker/README.md); the environment variable LRAT_CHECK names another
+binary. The runs of 27 October to 2 November 2026 used the unpatched tools/drat-trim/lrat-check.
 
 Usage: python3 run_cubes.py CNF ICNF OUTDIR [--workers W] [--sample N] [--seed S]
                             [--timeout SECONDS] [--proof] [--check]
@@ -19,7 +23,17 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-LRAT_CHECK = os.path.join(HERE, "..", "tools", "drat-trim", "lrat-check")
+LRAT_CHECK = os.environ.get("LRAT_CHECK") or os.path.join(HERE, "..", "checker", "lrat-check")
+
+
+def lrat_verdict(returncode, output):
+    """VERIFIED only if lrat-check exited 0, printed the line 'c VERIFIED' and printed neither
+    'FAILED' nor 'NOT VERIFIED'."""
+    ok = (returncode == 0
+          and any(line.strip() == "c VERIFIED" for line in output.splitlines())
+          and "FAILED" not in output
+          and "NOT VERIFIED" not in output)
+    return "VERIFIED" if ok else "FAILED"
 
 
 def read_cnf(path):
@@ -78,7 +92,7 @@ def solve_cube(nv, nc, body, cube, outdir, i, timeout=0, proof=False, check=Fals
         out, _ = chk.communicate()
         os.unlink(prf)
         if status == "UNSAT":
-            rec["check"] = "VERIFIED" if "c VERIFIED" in out else "FAILED"
+            rec["check"] = lrat_verdict(chk.returncode, out)
     os.unlink(path)
     return rec
 

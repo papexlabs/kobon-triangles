@@ -1,0 +1,44 @@
+# stored proofs for 8 lines re-checked with checker/lrat-check (patched); 2026-11-10T10:37:37Z
+== build/k8_16_simple.cnf cc0cbcc44bbf0d36c2248820b8a044ea53bfde88075bd14830299ff27218b170 results/proofs/k8_16_simple.lrat
+c parsed a formula with 5284 variables and 32740 clauses
+c VERIFIED
+c allocated 1024 745857 52840
+c Added clauses = 844780.  Deleted clauses = 832891.  Max live clauses = 50888
+c verification time = 6.80 secs
+exit=0
+== build/k8_16_simple.red2.cnf 7aa72a683e4e490c2cdee519fd01b1165469cb3fe519c55547541a0f340e2695 results/proofs/k8_16_simple.red2.lrat
+c parsed a formula with 6120 variables and 38460 clauses
+c VERIFIED
+c allocated 1024 584110 61200
+c Added clauses = 388848.  Deleted clauses = 361072.  Max live clauses = 44675
+c verification time = 2.78 secs
+exit=0
+== build/k8_16_simple.lex.cnf de7c073f50ba25cceb5e3e6d3316ba21fd08339d9135979e121dd24fe3f2d0fd results/proofs/k8_16_simple.lex.lrat
+c parsed a formula with 5480 variables and 33720 clauses
+c WARNING hint already satisfied in lemma with index 352572
+c VERIFIED
+c allocated 1024 512122 54800
+c Added clauses = 469209.  Deleted clauses = 444470.  Max live clauses = 39305
+c verification time = 3.14 secs
+exit=0
+== build/k8_16_case-b.cnf 6998c5ebd371774624f5ced190b16ef44c52d76bc57743c7fb310a6139eb77c6 results/proofs/k8_16_case-b.lrat
+c parsed a formula with 5284 variables and 32687 clauses
+c VERIFIED
+c allocated 1024 744646 52840
+c Added clauses = 775715.  Deleted clauses = 739834.  Max live clauses = 51504
+c verification time = 6.99 secs
+exit=0
+== build/k8_16_case-b.red2.cnf f7f04d0d64895768b959c5bbe47d6694b3f5cf002ef8425a02b40bea6c34d0a3 results/proofs/k8_16_case-b.red2.lrat
+c parsed a formula with 11720 variables and 93895 clauses
+c VERIFIED
+c allocated 1024 950685 117200
+c Added clauses = 1091289.  Deleted clauses = 1026396.  Max live clauses = 105866
+c verification time = 7.91 secs
+exit=0
+== build/k8_16_case-b.lex.cnf 217b40af94e307602b0eb6b11102fcd8c7128b7f9aef29275bc795fcac68d516 results/proofs/k8_16_case-b.lex.lrat
+c parsed a formula with 5382 variables and 33177 clauses
+c VERIFIED
+c allocated 1024 503874 53820
+c Added clauses = 544980.  Deleted clauses = 515722.  Max live clauses = 47267
+c verification time = 5.70 secs
+exit=0

@@ -1,0 +1,47 @@
+diff --git a/tools/drat-trim/lrat-check.c b/tools/drat-trim/lrat-check.c
+index 8fe998a..fded42c 100644
+--- a/tools/drat-trim/lrat-check.c
++++ b/tools/drat-trim/lrat-check.c
+@@ -72,9 +72,15 @@ int  getRATs   (int* list) { int c = 0; while (*list) if ((*list++) < 0) c++; re
+ int convertLit (int lit)   { return (abs(lit) * 2) + (lit < 0); }
+ int printLit   (int lit)   { return (lit >> 1) * (-2 * (lit&1) + 1); }
+ 
++// tournament-ramsey patch (5 Nov 2026): an index outside the allocated table, or in a bucket
++// that is not allocated (never used, or freed after all its clauses were deleted), is a clause
++// that does not exist.  Upstream read clsList[-BUCKET + offset] or past topTable here
++// (undefined behaviour); now such an index is DELETED, so a hint to it is rejected.
+ inline int getClause (int index) {
++  if (index < 0 || index / BUCKET >= topAlloc) return DELETED;
+   int bucket = index / BUCKET;
+   int offset = index % BUCKET;
++  if (topTable[bucket] < 0) return DELETED;
+   return clsList[topTable[bucket]*BUCKET + offset]; }
+ 
+ inline void setClause (int index, int value) {
+@@ -111,7 +117,7 @@ int checkRedundancy (int pivot, int start, int *hints, ltype thisMask, int print
+     if (print) {
+       printf ("c hint %i\nc ", *hints);
+       int* c = table + getClause(*hints); printClause (c); }
+-    if (getClause(*hints) == DELETED) { printf ("c ERROR: using DELETED hint clause %i\n", *hints); printf ("c %i\n", topTable[*hints/BUCKET]); return FAILED; };
++    if (getClause(*hints) == DELETED) { printf ("c ERROR: using DELETED hint clause %i\n", *hints); return FAILED; };
+     int unit = 0, *clause = table + getClause(*(hints++));
+     while (*clause) {
+       int clit = convertLit (*(clause++));
+@@ -157,6 +163,17 @@ int checkClause (int* list, int size, int* hints, int print) {
+   int *first = hints; first++; while (*first > 0) first++;
+   int start = intro[pivot ^ 1];
+ 
++  // tournament-ramsey patch (5 Nov 2026): here the positive hints ended without a conflict.
++  // A non-empty lemma may still be accepted below (its pivot is a fresh or pure literal, or
++  // its RAT hints cover every clause with the negated pivot).  The empty clause has no
++  // pivot: list[0] is the terminating 0, so pivot = 0 and intro[pivot ^ 1] = intro[1], a slot
++  // no literal ever sets.  Upstream therefore accepted an empty clause whose hints do not
++  // conflict (RATs == 0: start == 0; RATs > 0: no clause contains "literal 1", so the RAT check
++  // has nothing to cover and passes once each RAT-hint clause is satisfied by the propagated
++  // units), e.g. "3 0 0" for the satisfiable "1 2 0 / -1 2 0".  The empty clause must be
++  // derived by a conflict, so reject it here, before both the RAT and non-RAT paths.
++  if (size == 0) { printf ("c FAILED: empty clause without conflict\n"); return FAILED; }
++
+   if (RATs == 0)      {
+ //    if (res == SUCCESS) return FAILED; // No RAT and no conflict is FAILED
+     if (print) printf ("c start %i first %i\n", start, -first[0]);

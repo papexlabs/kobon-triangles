@@ -15,6 +15,9 @@ Usage, from the repository root:
     --node PATH   only leaves below PATH, a node directory relative to TREE (e.g. c201/c63/c15)
     --max-secs X  only leaves whose recorded solve time is at most X seconds
     --covers      also re-check the covers of the splits on the selected leaves' paths
+    --all-covers  re-check the cover of every split of the tree
+    --no-leaves   re-solve no leaf (with --all-covers: covers only)
+The checker is checker/lrat-check (or LRAT_CHECK); with CAKE_LPR set, covers must also pass cake_lpr.
 Example (case B, 11 lines):
   python3 -I scripts/recheck.py build/k11_33_caseB.lex.cnf build/k11B_lex_d8.icnf \\
       results/cubes_k11B_lex_d8 --sample 50 --max-secs 120 --covers
@@ -69,7 +72,8 @@ def main():
     node = arg("--node", "", str).strip("/")
     max_secs = arg("--max-secs", 0.0, float)
     workers = arg("--workers", os.cpu_count() or 4, int)
-    covers = "--covers" in sys.argv
+    all_covers = "--all-covers" in sys.argv
+    covers = "--covers" in sys.argv or all_covers
 
     top = read_cnf(cnf)
     found, splits = [], {}
@@ -82,6 +86,8 @@ def main():
             and (not max_secs or s <= max_secs)]
     if sample and len(pick) > sample:
         pick = random.Random(seed).sample(pick, sample)
+    if "--no-leaves" in sys.argv:
+        pick = []
     print(f"re-solving {len(pick)} leaves with {workers} workers", flush=True)
 
     tmp = tempfile.mkdtemp(prefix="kobon-recheck-")
@@ -91,6 +97,8 @@ def main():
     if covers:
         jobs.append(("cover", "top", [], None))
         dirs = {os.path.join(d, f"c{i}") for p, _ in pick for d, i, _ in p[:-1]}
+        if all_covers:
+            dirs = set(splits)
         for k, sub in enumerate(sorted(dirs)):
             jobs.append(("cover", k, splits[sub], sub))
 
@@ -115,7 +123,7 @@ def main():
             r = subprocess.run([sys.executable, "-I", os.path.join(HERE, "check_cover.py"),
                                 path, cubes, work],
                                capture_output=True, text=True)
-            ok = "cover=VERIFIED" in r.stdout
+            ok = r.returncode == 0 and "cover=VERIFIED" in r.stdout and "FAILED" not in r.stdout
             return ok, f"cover {extra or 'top split'}: {r.stdout.strip()}"
         finally:
             shutil.rmtree(work, ignore_errors=True)

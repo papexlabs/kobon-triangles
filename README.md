@@ -2,19 +2,29 @@
 
 > **Earlier result.** Roman Parpalak and Denis Utkin proved a(11) = 32 first, by exhaustive
 > enumeration: Theorem 3.12 of *Non-simple Arrangements of Lines and Pseudolines with Many
-> Triangles* (submitted to arXiv on 1 November 2026). Their enumeration output has been public since
-> September 2026 at [parpalak/kobon-even-draft](https://github.com/parpalak/kobon-even-draft). This
-> repository verifies their result by a different method: SAT, with every step checked by an
-> independent proof checker.
+> Triangles* ([arXiv:2611.03096](https://arxiv.org/abs/2611.03096)). Their enumeration output has
+> been public since September 2026 at
+> [parpalak/kobon-even-draft](https://github.com/parpalak/kobon-even-draft). This repository
+> verifies their result by a different method: a case split proved by hand and two SAT instances
+> with checked proofs.
+
+> **Correction (version 2, 10 November 2026).** Version 1 said that an independent proof checker
+> verified every step. The checker of the original runs, drat-trim's `lrat-check`, does not check
+> the last step of a proof, the empty clause
+> ([drat-trim issue #42](https://github.com/marijnheule/drat-trim/issues/42)); that step rested on
+> the solver. With a patched checker (`checker/`) we re-checked case A in full, the covers of all
+> 1,094 splits of case B (also with the formally verified `cake_lpr`) and 100 random leaves; all
+> were verified (`results/recheck-fixed/`). For the other 67,514 leaves of case B the last step
+> still rests on CaDiCaL; every earlier step was checked.
 
 **Result.** No arrangement of 11 pseudolines in the affine plane (straight lines included, simple
 or not: parallel lines and three or more lines through a point are allowed) has 33 or more bounded
 triangular faces. With the known 32-triangle arrangements of Honma and Kabanovitch, the Kobon
 triangle number for 11 lines (OEIS [A006066](https://oeis.org/A006066), a(11)) is **32**.
 
-Signed record on Papex: https://papex.org/id/PXP-18B537AWDH1F/v/1 (the paper, signed by Papex Labs).
-The paper source is `paper/kobon11.tex`; the PDF is also attached to the v1 release. It has not been peer
-reviewed. The hand argument that reduces every arrangement to two SAT instances (Proposition 5,
+Signed record on Papex: https://papex.org/id/PXP-18B537AWDH1F/v/1 (version 1 of the paper, signed
+by Papex Labs). The paper source is `paper/kobon11.tex` (version 2); the version 1 PDF is attached
+to the v1 release. It has not been peer reviewed. The hand argument that reduces every arrangement to two SAT instances (Proposition 5,
 the case split) is the part we most want checked: a similar reduction in Clément–Bader (2007)
 has a counterexample, which is why a(11) was removed from A006066 in October 2026.
 
@@ -23,12 +33,13 @@ has a counterexample, which is why a(11) was removed from A006066 in October 202
 1. **Case split (by hand, paper Section 2).** An arrangement with 3T ≥ n(n−2) triangles is either
    simple (case A) or has three concurrent lines 1, 2, 3 with triangles on lines {1,2,4}, {1,2,5}
    and {2,3,z} (case B). For n = 11, 3 · 33 = 11 · 9.
-2. **Case A.** One CNF, refuted by CaDiCaL 3.0.1 with a 22.66 GB LRAT proof that `lrat-check`
-   verified in 573 s. The proof is not included; it can be regenerated (about 4.5 hours).
+2. **Case A.** One CNF, refuted by CaDiCaL 3.0.1 with a 22.66 GB LRAT proof. The patched
+   `lrat-check` verified it in full (`results/recheck-fixed/caseA.log`). The proof is not
+   included; it can be regenerated (about 4.5 hours).
 3. **Case B.** A cube-and-conquer tree in `results/cubes_k11B_lex_d8/`: 1,094 splits, each with a
    cover check (the node formula plus the negations of all its cubes refuted with a checked LRAT
    proof), and 67,614 leaves, each refuted by CaDiCaL with its LRAT proof streamed into
-   `lrat-check`. Every node directory holds `sub.icnf` (its cubes), `cover.out` and
+   `lrat-check` (the unpatched one; see the correction above). Every node directory holds `sub.icnf` (its cubes), `cover.out` and
    `results.jsonl` (one record per solve; the latest record per cube counts).
    `scripts/summary.py` walks the tree and reports `ALL CLOSED`.
 
@@ -51,11 +62,13 @@ has a counterexample, which is why a(11) was removed from A006066 in October 202
 
 ## Requirements
 
-Python 3.10 or later; CaDiCaL 3.0.1 as `cadical` on the PATH; `lrat-check` from
-[drat-trim](https://github.com/marijnheule/drat-trim) (commit 2e3b2dc) built at
-`tools/drat-trim/lrat-check`; `march_cu` from [CnC](https://github.com/marijnheule/CnC)
+Python 3.10 or later; CaDiCaL 3.0.1 as `cadical` on the PATH; the patched `lrat-check` built
+from `checker/lrat-check.c` (see `checker/README.md`:
+`cc -std=c99 -DLONGTYPE -O2 -o checker/lrat-check checker/lrat-check.c`); `march_cu` from [CnC](https://github.com/marijnheule/CnC)
 (commit 705b60c, built with `-fcommon` on GCC 10 or later) at `tools/CnC/march_cu/march_cu`.
-`scripts/cloud/setup.sh` builds all three on Ubuntu 24.04.
+`scripts/cloud/setup.sh` builds all three on Ubuntu 24.04. Optional: `cake_lpr`
+([tanyongkiam/cake_lpr](https://github.com/tanyongkiam/cake_lpr), tag v1.0.0); with the
+environment variable `CAKE_LPR` set to its binary, cover proofs must pass it as well.
 
 ## Checking it
 
@@ -68,7 +81,7 @@ shasum -a 256 build/k11_33_simple.lexred.cnf build/k11_33_caseB.lex.cnf
 
 # 2. Case A: about 4.5 hours and 23 GB of disk
 cadical --lrat=true --binary=false build/k11_33_simple.lexred.cnf caseA.lrat
-tools/drat-trim/lrat-check build/k11_33_simple.lexred.cnf caseA.lrat
+checker/lrat-check build/k11_33_simple.lexred.cnf caseA.lrat
 
 # 3. Case B: closure of the recorded tree
 python3 scripts/summary.py build/k11B_lex_d8.icnf results/cubes_k11B_lex_d8 \
@@ -78,6 +91,7 @@ python3 scripts/summary.py build/k11B_lex_d8.icnf results/cubes_k11B_lex_d8 \
 python3 -I scripts/recheck.py build/k11_33_caseB.lex.cnf build/k11B_lex_d8.icnf \
     results/cubes_k11B_lex_d8 --sample 50 --max-secs 120 --covers
 #    --node c201/c63/c15 re-checks one subtree; --sample 0 re-checks every leaf (about 2,000 CPU hours)
+#    --no-leaves --all-covers re-checks the cover of every split (minutes)
 ```
 
 ## How this work was done
@@ -88,7 +102,8 @@ from the published statements of the sources, not from the tools of Savchuk (arX
 Before release, a separate Claude Opus 5.5 session, given the code and notes but not our
 conclusions, re-derived the hand arguments, tested them on 615 random straight-line arrangements,
 audited the whole tree and re-solved leaves and covers from scratch; it found no error. That does
-not replace review by a mathematician.
+not replace review by a mathematician. The re-checks and text changes of version 2 were prepared
+by Claude Fable 5.2 and reviewed and signed in the same way.
 
 ## License
 

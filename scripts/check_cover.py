@@ -5,6 +5,10 @@ check is that CNF + (not c_i for every cube i) is unsatisfiable, proved with an 
 lrat-check verifies. Together with an UNSAT result for CNF + c_i for every i this shows that the
 CNF is unsatisfiable.
 
+The checker and the verdict rule are those of run_cubes.py (checker/lrat-check, or LRAT_CHECK).
+If the environment variable CAKE_LPR names a cake_lpr binary, the same proof must also be
+accepted by it: exit code 0, the single output line 's VERIFIED UNSAT' and nothing on stderr.
+
 Usage: python3 check_cover.py CNF ICNF OUTDIR
 """
 
@@ -13,7 +17,10 @@ import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-LRAT_CHECK = os.path.join(HERE, "..", "tools", "drat-trim", "lrat-check")
+sys.path.insert(0, HERE)
+from run_cubes import LRAT_CHECK, lrat_verdict  # noqa: E402
+
+CAKE_LPR = os.environ.get("CAKE_LPR")
 
 
 def main():
@@ -42,8 +49,14 @@ def main():
         print(f"cubes={len(clauses)} NOT A COVER (cadical exit {r.returncode})")
         sys.exit(1)
     c = subprocess.run([LRAT_CHECK, path, prf], capture_output=True, text=True)
-    ok = "c VERIFIED" in c.stdout
-    print(f"cubes={len(clauses)} cover={'VERIFIED' if ok else 'CHECK FAILED'}")
+    ok = lrat_verdict(c.returncode, c.stdout + c.stderr) == "VERIFIED"
+    line = f"cubes={len(clauses)} cover={'VERIFIED' if ok else 'CHECK FAILED'}"
+    if CAKE_LPR:
+        k = subprocess.run([CAKE_LPR, path, prf], capture_output=True, text=True)
+        cake = k.returncode == 0 and k.stdout.strip() == "s VERIFIED UNSAT" and not k.stderr
+        line += f" cake_lpr={'VERIFIED' if cake else 'CHECK FAILED'}"
+        ok = ok and cake
+    print(line)
     sys.exit(0 if ok else 1)
 
 
