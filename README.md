@@ -60,6 +60,8 @@ has a counterexample, which is why a(11) was removed from A006066 in October 202
   `cubes_k11B_lex_d8.sha256` (hashes of every file of the tree).
 - `notes/`: `CASES.md` (the case split as first written), `PLAN.md`, and
   `papex-hypothesis-draft.md` (the claim and plan written on 27 October 2026, before any result).
+- `shared-work/`: the kit, the manifest and the acceptance runner of the shared-work list, in which
+  anyone can solve leaves of case B again with a fully checked proof (`shared-work/README.md`).
 
 ## Requirements
 
