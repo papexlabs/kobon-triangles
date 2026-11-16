@@ -19,8 +19,8 @@ You need a Papex account, macOS or Linux (on Windows, WSL), Python 3.9 or later,
 and CaDiCaL 1.9.0 or later as `cadical` on the PATH (macOS: `brew install cadical`; otherwise build
 it from [arminbiere/cadical](https://github.com/arminbiere/cadical)).
 
-1. On the list's page on papex.org, take units. You get a batch page; download its batch file
-   (`b-xxxxxx.json`).
+1. On [the list's page on papex.org](https://papex.org/problems/kobon-triangle-problem/shared-work),
+   take units. You get a batch page; download its batch file (`b-xxxxxx.json`).
 2. Run the kit:
 
    ```sh
