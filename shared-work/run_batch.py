@@ -4,12 +4,12 @@
   python3 shared-work/run_batch.py BATCH_FILE [--workers N] [--agent-host NAME]
   python3 shared-work/run_batch.py --check
 
-BATCH_FILE is the file you downloaded from your batch page on papex.org (b-xxxxxx.json). For every
-unit of the batch the kit writes the unit's formula, solves it with CaDiCaL, which writes an LRAT
-proof, and checks that proof with the patched lrat-check of this repository (checker/). It then
-writes two files next to each other in shared-work/work/BATCH/:
+BATCH_FILE is the file you downloaded from your batch page on papex.org; the page shows this
+command with the file's name. For every unit of the batch the kit writes the unit's formula, solves
+it with CaDiCaL, which writes an LRAT proof, and checks that proof with the patched lrat-check of
+this repository (checker/). It then writes two files in shared-work/work/BATCH/:
 
-  BATCH.result.json     what you upload on the batch page
+  BATCH.result.json     what you upload on the batch page; a copy is put next to BATCH_FILE
   BATCH.proofs.tar.xz   the proofs of the units the batch marks; keep it until the batch is decided
 
 A stopped run continues where it stopped when you give the same command again. --check only tests
@@ -132,7 +132,26 @@ def cpu_name():
     return platform.processor() or platform.machine()
 
 
+def missing_batch_file(path):
+    """What to say when the named batch file is not there: most often the example name was typed."""
+    folder = os.path.dirname(os.path.abspath(path))
+    try:
+        found = sorted((n for n in os.listdir(folder) if re.match(r"^b-[0-9a-f]{6,10}\.json$", n)),
+                       key=lambda n: os.path.getmtime(os.path.join(folder, n)), reverse=True)
+    except OSError:
+        found = []
+    lines = [f"There is no file {path}.",
+             "A batch file is named after its batch, for example b-948ffd.json. Your batch page on "
+             "papex.org shows the command with your file's name."]
+    if found:
+        lines.append(f"Batch files in {folder}: {', '.join(found[:5])}")
+        lines.append(f"Run:  python3 shared-work/run_batch.py {os.path.join(os.path.dirname(path), found[0])}")
+    return "\n".join(lines)
+
+
 def load_batch(path):
+    if not os.path.exists(path):
+        stop(missing_batch_file(path))
     try:
         batch = json.load(open(path))
     except (OSError, ValueError) as e:
@@ -258,7 +277,7 @@ def main():
     top = tree.ensure_top_cnf()
     if sys.argv[1] == "--check":
         print("This computer is ready. Take units on the list's page on papex.org, download the "
-              "batch file and run:  python3 shared-work/run_batch.py BATCH_FILE")
+              "batch file and run the command your batch page shows.")
         return
 
     batch = load_batch(sys.argv[1])
@@ -339,16 +358,26 @@ def main():
     result_path = os.path.join(work, f"{key}.result.json")
     with open(result_path, "w") as fh:
         fh.write(text)
+    # The same file next to the batch file, where the batch page's file chooser opens.
+    shown_path = os.path.relpath(result_path)
+    beside = os.path.join(os.path.dirname(os.path.abspath(sys.argv[1])), f"{key}.result.json")
+    if os.path.abspath(beside) != os.path.abspath(result_path):
+        try:
+            with open(beside, "w") as fh:
+                fh.write(text)
+            shown_path = beside
+        except OSError:
+            pass
     kept = [u["key"] for u in batch["units"] if u["key"] in keep and records[u["key"]]["outcome"] == "UNSAT"]
     print()
     verified = sum(1 for r in records.values() if r.get("check") == "VERIFIED")
     print(f"Done: {verified} of {total} units have no solution, each with a checked proof.")
-    print(f"Result file:  {os.path.relpath(result_path)}")
+    print(f"Result file:  {shown_path}")
     print("  Upload it on your batch page on papex.org, choose how you are shown, and send it.")
     if kept:
         archive = bundle(work, key, kept, records)
         print(f"Kept proofs:  {os.path.relpath(archive)} "
-              f"({len(kept)} proofs, {os.path.getsize(archive) / 1e6:.1f} MB)")
+              f"({len(kept)} proof{'s' if len(kept) != 1 else ''}, {os.path.getsize(archive) / 1e6:.1f} MB)")
         print("  Keep this file. If Papex Labs asks for the proofs, put it at a direct https link and\n"
               "  give that link for each marked unit on the batch page.")
     if failed:

@@ -19,23 +19,29 @@ You need a Papex account, macOS or Linux (on Windows, WSL), Python 3.9 or later,
 and CaDiCaL 1.9.0 or later as `cadical` on the PATH (macOS: `brew install cadical`; otherwise build
 it from [arminbiere/cadical](https://github.com/arminbiere/cadical)).
 
-1. On [the list's page on papex.org](https://papex.org/problems/kobon-triangle-problem/shared-work),
-   take units. You get a batch page; download its batch file (`b-xxxxxx.json`).
-2. Run the kit:
+1. Set up the kit once:
 
    ```sh
    git clone https://github.com/papexlabs/kobon-triangles && cd kobon-triangles
-   python3 shared-work/run_batch.py --check                     # tests the tools, runs nothing
-   python3 shared-work/run_batch.py ~/Downloads/b-xxxxxx.json
+   python3 shared-work/run_batch.py --check       # tests the tools, runs nothing
    ```
 
-   It prints one line per unit and can be stopped and started again. At the end it names two
-   files in `shared-work/work/b-xxxxxx/`.
-3. Upload `b-xxxxxx.result.json` on the batch page, choose how you are shown, and send it.
-4. Keep `b-xxxxxx.proofs.tar.xz`. It holds the proofs of the few units your batch marks. Papex
-   Labs asks for them by email: put the file at a direct https link (a GitHub release, your own
-   site, a Dropbox link ending in `dl=1`) and give that link for each marked unit on the batch
-   page.
+2. On [the list's page on papex.org](https://papex.org/problems/kobon-triangle-problem/shared-work),
+   take units. You get a batch page; download its batch file there.
+3. Run the batch in the `kobon-triangles` folder. The batch page shows the command with your
+   file's name, to copy. For a batch named b-948ffd it is:
+
+   ```sh
+   python3 shared-work/run_batch.py ~/Downloads/b-948ffd.json
+   ```
+
+   It prints one line per unit and can be stopped and started again. At the end it writes the
+   result file next to the batch file (here `~/Downloads/b-948ffd.result.json`).
+4. Upload that result file on the batch page, choose how you are shown, and send it.
+5. Keep the proofs file the kit names at the end (`shared-work/work/b-948ffd/b-948ffd.proofs.tar.xz`).
+   It holds the proofs of the few units your batch marks. Papex Labs asks for them by email: put
+   the file at a direct https link (a GitHub release, your own site, a Dropbox link ending in
+   `dl=1`) and give that link for each marked unit on the batch page.
 
 With an AI app connected to Papex you can ask it to take the units and, once you have downloaded
 the batch file from the batch page, to run the kit and attach the result. Sending the batch, and
