@@ -85,8 +85,8 @@ class Plain:
 
     def leaves(self, with_key):
         if with_key:
-            self.say("With the key, this run tells Papex how many units are done and sends the result "
-                     "file at the end. Nothing else leaves this computer.")
+            self.say("With the key, this run tells Papex how many units are done, and at the end sends the "
+                     "result file and the proofs of the units the batch marks. Nothing else leaves this computer.")
 
     def step(self, label, work, detail=None):
         return work()
@@ -142,8 +142,28 @@ class Plain:
     def upload_by_hand(self):
         self.say("  Upload it on your batch page on papex.org, choose how you are shown, and send it.")
 
-    def kept(self, archive, count, megabytes):
+    def proofs_sending(self, count, size):
+        pass
+
+    def proofs_progress(self, sent, size):
+        pass
+
+    def proofs_waiting(self, seconds):
+        self.say(f"  Papex did not take the proofs just now; trying again in {seconds} s.")
+
+    def proofs_sent(self, ok):
+        pass
+
+    def kept(self, archive, count, megabytes, with_papex=None):
+        """`with_papex`: True when the kit sent the proofs to Papex, a reason in words when it tried
+        and could not, None when it did not try (a batch file, or a Papex that takes none)."""
         self.say(f"Kept proofs:  {archive} ({count} proof{'s' if count != 1 else ''}, {megabytes:.1f} MB)")
+        if with_papex is True:
+            self.say("  Sent to Papex too: you have nothing to upload or link. Keep the file until the\n"
+                     "  batch is decided.")
+            return
+        if with_papex:
+            self.say(f"  It could not be sent to Papex ({with_papex}).")
         self.say("  Keep this file. If Papex Labs asks for the proofs, put it at a direct https link and\n"
                  "  give that link for each marked unit on the batch page.")
 
@@ -277,8 +297,9 @@ class Show(Plain):
             self.cursor(True)
 
     def leaves(self, with_key):
-        line = ("With the key, this run tells Papex how many units are done and sends the result "
-                "file at the end. Nothing else leaves this computer.") if with_key \
+        line = ("With the key, this run tells Papex how many units are done, and at the end sends the "
+                "result file and the proofs of the units the batch marks. Nothing else leaves this "
+                "computer.") if with_key \
             else "With a batch file, this run sends nothing anywhere."
         for part in self.wrap(line, self.width() - 4):
             self.write("  " + self.paint(part, dim=True) + "\n")
@@ -508,8 +529,31 @@ class Show(Plain):
     def upload_by_hand(self):
         pass  # the box at the end says it
 
-    def kept(self, archive, count, megabytes):
-        self.archive = (archive, count, megabytes)
+    def proofs_sending(self, count, size):
+        """The kept proofs go to Papex: one row, turning, with how much has gone."""
+        self.proof_row = ["Proofs", "run", ""]
+        self.rows = [self.proof_row]
+        self.proofs_progress(0, size)
+        self.start_painting(self.row_lines, rate=12)
+
+    def proofs_progress(self, sent, size):
+        span = 16
+        filled = span * sent // max(1, size)
+        self.proof_row[2] = (f"sending {sent / 1e6:.1f} of {size / 1e6:.1f} MB  "
+                             + self.glyph("bar") * filled + self.glyph("rest") * (span - filled))
+        self.proof_size = size
+
+    def proofs_waiting(self, seconds):
+        self.proof_row[2] = f"Papex did not take them just now; trying again in {seconds} s"
+
+    def proofs_sent(self, ok):
+        self.proof_row[1] = "ok" if ok else "no"
+        self.proof_row[2] = f"with Papex ({self.proof_size / 1e6:.1f} MB): nothing to host, nothing to paste" if ok \
+            else "not sent to Papex"
+        self.end_painting(self.row_lines)
+
+    def kept(self, archive, count, megabytes, with_papex=None):
+        self.archive = (archive, count, megabytes, with_papex)
 
     def next_steps(self):
         """What the person does now, in a box, then where the files are."""
@@ -519,13 +563,19 @@ class Show(Plain):
         if not self.archive:
             self.write("\n")
             return
-        archive, count, megabytes = self.archive
+        archive, count, megabytes, with_papex = self.archive
         size = f"({count} proof{'s' if count != 1 else ''}, {megabytes:.1f} MB)"
         apart = 15 + len(archive) + 2 + len(size) >= self.width()   # no room beside the path: on its own line
         self.write("  " + self.paint("Kept proofs  ", dim=True) + f"{archive}"
                    + (self.paint("\n               " + size if apart else "  " + size, dim=True)) + "\n")
-        note = ("Keep this file. If Papex Labs asks for the proofs, put it at a direct https link and give "
-                "that link for each marked unit on the batch page.")
+        if with_papex is True:
+            note = "Papex has them. Keep the file until the batch is decided."
+        else:
+            note = ("Keep this file. If Papex Labs asks for the proofs, put it at a direct https link and give "
+                    "that link for each marked unit on the batch page.")
+            if with_papex:
+                for part in self.wrap(f"It could not be sent to Papex ({with_papex}).", self.width() - 17):
+                    self.write("               " + self.paint(part, fg="seal") + "\n")
         for part in self.wrap(note, self.width() - 17):
             self.write("               " + self.paint(part, dim=True) + "\n")
         self.write("\n")

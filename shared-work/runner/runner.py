@@ -11,6 +11,9 @@ Without --post it only prints what it would send. The rules, the same for every 
    formula is not the manifest's, a unit is not "no solution, proof verified", or the reported time
    is not plausible (less than a fiftieth of the original run's).
 2. Otherwise the proofs of the marked units are asked for, due 14 days after the batch was sent.
+   When the kit sent the proofs to Papex with the batch's key, nobody is asked for a link: the
+   request leaves the batch ready at once, and the runner fetches that stored file with its token
+   and goes on to step 3 in the same run.
 3. When every marked unit has a link, recheck_proofs.py fetches and checks the proofs again. With
    --recheck-cmd it runs in a container: {job} in the command is a directory that holds job.json
    and receives out.json, for example
@@ -27,6 +30,7 @@ re-check gets no credential: it reads a job file and writes outcomes.
 
 import argparse
 import datetime
+import hashlib
 import json
 import os
 import shlex
@@ -46,6 +50,9 @@ import tree  # noqa: E402
 TOKEN_ENV = "PAPEX_SHARED_WORK_RUNNER_TOKEN"
 CHECKER_SHA256 = "0x" + tree.sha256_file(os.path.join(tree.ROOT, "checker", "lrat-check.c"))
 PROOF_DAYS = 14
+STORED_WAIT = datetime.timedelta(minutes=15)   # how long a sent batch may still receive the kit's proofs
+STORED_NAME = "proofs.tar.xz"        # the kit's archive, fetched from Papex into the job directory
+STORED_MAX_BYTES = 200 * 1024 * 1024   # Papex takes less; a longer answer is refused
 TIMING_FACTOR = 50
 SELF = "the participant's run with the patched lrat-check"
 
@@ -67,6 +74,25 @@ class Api:
                 return json.loads(response.read().decode() or "null")
         except urllib.error.HTTPError as error:
             raise SystemExit(f"{method} {path} answered {error.code}: {error.read().decode('utf-8', 'replace')[:500]}")
+
+    def download(self, path, dest, expected_sha256, limit):
+        """GET a file with the token to dest; refuse one that is too long or not the one Papex names."""
+        request = urllib.request.Request(self.base + path, method="GET")
+        request.add_header("User-Agent", "papex-shared-work-runner")
+        request.add_header("X-Papex-Runner-Token", self.token)
+        digest, size = hashlib.sha256(), 0
+        try:
+            with urllib.request.urlopen(request, timeout=120) as response, open(dest, "wb") as out:
+                for block in iter(lambda: response.read(1 << 20), b""):
+                    size += len(block)
+                    if size > limit:
+                        raise SystemExit(f"GET {path}: the stored proofs are longer than {limit} bytes; nothing was decided")
+                    digest.update(block)
+                    out.write(block)
+        except urllib.error.HTTPError as error:
+            raise SystemExit(f"GET {path} answered {error.code}: {error.read().decode('utf-8', 'replace')[:300]}")
+        if "0x" + digest.hexdigest() != expected_sha256:
+            raise SystemExit(f"GET {path}: the file is not the one Papex names; nothing was decided")
 
     def queue(self, list_key):
         page = 0
@@ -134,13 +160,22 @@ def check_static(result, manifest):
     return None
 
 
-def recheck(batch, result, manifest_name, command):
-    """Run recheck_proofs.py on the marked units: {key: {"result", "checkedWith", "detail"}}."""
+def recheck(batch, result, manifest_name, command, api=None):
+    """Run recheck_proofs.py on the marked units: {key: {"result", "checkedWith", "detail"}}.
+
+    The proofs come from the links the participant gave, or, when the kit sent them to Papex with
+    the batch's key, from that stored file: the runner fetches it with its token into the job
+    directory, and the re-check (which holds no credential) reads it from there."""
     declared = {u["key"]: u["proof"] for u in result["units"]}
+    stored = batch.get("storedProofs")
+    source = {"stored": STORED_NAME} if stored else None
     job = {"manifest": manifest_name, "units": [
-        {"key": u["key"], "url": u["proofUrl"], "sha256": declared[u["key"]]["sha256"],
-         "bytes": declared[u["key"]]["bytes"]} for u in batch["units"] if u["keepProof"]]}
+        dict(source or {"url": u["proofUrl"]}, key=u["key"], sha256=declared[u["key"]]["sha256"],
+             bytes=declared[u["key"]]["bytes"]) for u in batch["units"] if u["keepProof"]]}
     with tempfile.TemporaryDirectory(prefix="papex-job-") as jobdir:
+        if stored:
+            api.download(f"/api/admin/shared-work/batches/{batch['batchKey']}/proofs",
+                         os.path.join(jobdir, STORED_NAME), stored["sha256"], STORED_MAX_BYTES)
         with open(os.path.join(jobdir, "job.json"), "w") as fh:
             json.dump(job, fh)
         if command:
@@ -172,7 +207,7 @@ def rejection(batch, result, code, text, next_step, keep_checks=()):
                        "units": units_body(result, False, {}), "keepChecks": list(keep_checks)}
 
 
-def decide(batch, known, today, command):
+def decide(batch, known, today, command, api=None, now=None):
     """The one decision for a batch in its current state: (route, body), or None to leave it."""
     result = json.loads(batch["resultText"])
     entry = known.get(batch["list"]["sha256"])
@@ -193,12 +228,22 @@ def decide(batch, known, today, command):
     if failure:
         return rejection(batch, result, *failure)
     if state == "SUBMITTED":
-        sent = datetime.datetime.fromisoformat(batch["submittedAt"].replace("Z", "+00:00")).date()
+        sent_at = datetime.datetime.fromisoformat(batch["submittedAt"].replace("Z", "+00:00"))
+        # The kit sends the marked proofs after the result, and a person may press Send while they
+        # are still going up. Asking at once would send them an email for a link nobody needs: the
+        # request waits until the kit has had its time. (Only a Papex that can hold proofs says
+        # "storedProofs" at all; without the word nothing is waited for.)
+        waited = (now or datetime.datetime.now(datetime.timezone.utc)) - sent_at
+        if "storedProofs" in batch and not batch["storedProofs"] and waited < STORED_WAIT \
+                and any(u["keepProof"] for u in batch["units"]):
+            print(f"{batch['batchKey']}: sent {int(waited.total_seconds() // 60)} min ago and the kit's proofs are "
+                  f"not with Papex yet; the proof request waits {int(STORED_WAIT.total_seconds() // 60)} min for them")
+            return None
         return "proof-request", {"verdictId": str(uuid.uuid4()),
-                                 "dueOn": (sent + datetime.timedelta(days=PROOF_DAYS)).isoformat(), "message": None}
+                                 "dueOn": (sent_at.date() + datetime.timedelta(days=PROOF_DAYS)).isoformat(), "message": None}
     if state != "PROOFS_SUPPLIED":
         return None
-    checks = recheck(batch, result, manifest_name, command)
+    checks = recheck(batch, result, manifest_name, command, api)
     kept = [u["key"] for u in batch["units"] if u["keepProof"]]
     done = [{"key": k, "result": checks[k]["result"], "checkedWith": checks[k]["checkedWith"]}
             for k in kept if checks.get(k, {}).get("result") in ("VERIFIED", "FAILED")]
@@ -207,8 +252,8 @@ def decide(batch, known, today, command):
                          "Please keep the proof and open an issue at https://github.com/papexlabs/kobon-triangles/issues.", done)
     if len(done) < len(kept):
         missing = [k for k in kept if checks.get(k, {}).get("result") != "VERIFIED"]
-        print(f"{batch['batchKey']}: no usable proof at the link of {', '.join(missing)}: "
-              f"{checks.get(missing[0], {}).get('detail')}")
+        print(f"{batch['batchKey']}: no usable proof {'in the stored file' if batch.get('storedProofs') else 'at the link'}"
+              f" of {', '.join(missing)}: {checks.get(missing[0], {}).get('detail')}")
         if due and today > due:
             return rejection(batch, result, "PROOF_UNREACHABLE", "A marked proof could not be fetched from its link.",
                              "Take units again and put the proofs file at a direct https link.", done)
@@ -239,18 +284,24 @@ def main(argv=None):
     known = manifests()
     today = datetime.datetime.now(datetime.timezone.utc).date()
     for entry in api.queue(args.list):
-        batch = api.call("GET", f"/api/admin/shared-work/batches/{entry['batchKey']}")
-        decision = decide(batch, known, today, args.recheck_cmd)
-        if decision is None:
-            print(f"{batch['batchKey']} {batch['state']}: no decision now")
-            continue
-        route, body = decision
-        print(f"{batch['batchKey']} {batch['state']}: {route} "
-              f"{body.get('outcome') or body.get('dueOn')} {body.get('reasonCode') or ''}")
-        if args.post:
+        # A batch whose proofs the kit sent goes on in this same run: the proof request leaves it
+        # PROOFS_SUPPLIED at once (nobody has a link to give), so it is read again and decided.
+        for _ in range(2):
+            batch = api.call("GET", f"/api/admin/shared-work/batches/{entry['batchKey']}")
+            decision = decide(batch, known, today, args.recheck_cmd, api)
+            if decision is None:
+                print(f"{batch['batchKey']} {batch['state']}: no decision now")
+                break
+            route, body = decision
+            print(f"{batch['batchKey']} {batch['state']}: {route} "
+                  f"{body.get('outcome') or body.get('dueOn')} {body.get('reasonCode') or ''}"
+                  + (" (proofs stored at Papex)" if batch.get("storedProofs") else ""))
+            if not args.post:
+                print(json.dumps(body, indent=1, ensure_ascii=False))
+                break
             api.call("POST", f"/api/admin/shared-work/batches/{batch['batchKey']}/{route}", body)
-        else:
-            print(json.dumps(body, indent=1, ensure_ascii=False))
+            if route != "proof-request" or not batch.get("storedProofs"):
+                break
     return 0
 
 

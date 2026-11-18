@@ -38,14 +38,16 @@ it from [arminbiere/cadical](https://github.com/arminbiere/cadical)).
    The kit fetches the batch's units and draws the run in the terminal: the units as cells that
    fill as they finish, the count and the time left. It can be stopped and started again with
    the same command, and the batch page shows how far it has got. At the end the kit sends the
-   result file to the batch page. If the kit says the key is no longer valid, copy the command
-   again.
-4. Go back to the batch page, choose how you are shown, and send the batch.
-5. Keep the proofs file the kit names at the end (`shared-work/work/b-948ffd/b-948ffd.proofs.tar.xz`
-   for a batch named b-948ffd). It holds the proofs of the few units your batch marks. Papex Labs
-   asks for them by email: put the file at a direct https link (a GitHub release, your own site, a
-   Dropbox link ending in `dl=1`) and give that link for each marked unit on the batch page. The
-   file holds the proof files and an index, and no name of your computer or its user.
+   result file, and the proofs of the few units your batch marks, to Papex. If the kit says the
+   key is no longer valid, copy the command again.
+4. Go back to the batch page, choose how you are shown, and send the batch. That is all: Papex
+   Labs' program checks the result and the marked proofs, and you get an email with the outcome.
+
+The kit also keeps the marked proofs in a file it names at the end
+(`shared-work/work/b-948ffd/b-948ffd.proofs.tar.xz` for a batch named b-948ffd). Keep it until
+the batch is decided. If the kit could not send it, Papex Labs asks for it by email: put the file
+at a direct https link (a GitHub release, your own site, a Dropbox link ending in `dl=1`) and
+give that link on the batch page.
 
 Written to a file or a pipe, with `NO_COLOR` set, or with `--plain`, the kit prints one plain line
 per unit instead of drawing; both say the same. In a terminal with UTF-8 and at least 76 columns
@@ -65,7 +67,8 @@ python3 shared-work/run_batch.py ~/Downloads/b-948ffd.json
 
 At the end the kit writes the result file next to the batch file (here
 `~/Downloads/b-948ffd.result.json`). Upload it on the batch page, choose how you are shown, and
-send the batch.
+send the batch. Papex Labs then asks by email for the proofs file the kit kept: put it at a direct
+https link and give that link on the batch page.
 
 With an AI app connected to Papex you can ask it to take the units and, once you have downloaded
 the batch file from the batch page, to run the kit and attach the result. Sending the batch, and
@@ -73,11 +76,13 @@ how your name is shown, stays with you on papex.org.
 
 ### What the kit sends
 
-With the key, the kit sends Papex two things and nothing else: while it runs, how many units of
-the batch are done; at the end, the result file. It never writes the key to a file or prints it.
-With a batch file, the kit sends nothing anywhere. The result file holds the name of your
-operating system and processor, the tool versions, and for each unit the running time and the size
-and SHA-256 of its proof.
+With the key, the kit sends Papex three things and nothing else: while it runs, how many units of
+the batch are done; at the end, the result file, and then the proofs of the units the batch marks
+(one archive; Papex keeps it until the batch is decided and deletes it then). It never writes the
+key to a file or prints it. With a batch file, the kit sends nothing anywhere. The result file
+holds the name of your operating system and processor, the tool versions, and for each unit the
+running time and the size and SHA-256 of its proof. The proofs archive holds the proof files and
+their sizes and SHA-256, and no name of your computer or its user.
 
 ## How a batch is decided
 
@@ -88,8 +93,8 @@ No person accepts a unit by hand. `runner/runner.py` decides every batch by the 
   computer. The self-test includes the proof that the unpatched checker wrongly accepts.
 - Every unit's formula must be the list's (SHA-256 in the manifest), and every unit must be "no
   solution, proof verified".
-- The marked proofs are fetched from your link and checked again by Papex Labs
-  (`runner/recheck_proofs.py`). One marked proof that fails rejects the whole batch.
+- The marked proofs, as the kit sent them (or fetched from your link), are checked again by Papex
+  Labs (`runner/recheck_proofs.py`). One marked proof that fails rejects the whole batch.
 
 An accepted unit is listed in the public ledger with what checked it: your run, and for the marked
 units also Papex Labs' second check. Units that were not marked rest on your run. If a unit ever

@@ -5,6 +5,9 @@
 
 JOB.json:  {"manifest": "pilot-v1.manifest.ndjson",
             "units": [{"key": "c201.c63:17", "url": "https://…", "sha256": "0x…", "bytes": 123}]}
+           A unit may name "stored": "proofs.tar.xz" in place of "url": a file in JOB.json's own
+           directory, which the runner fetched from Papex (the kit sent it there with the batch's
+           key). It is read exactly as a download is, and is as untrusted.
 OUT.json:  {"c201.c63:17": {"result": "VERIFIED" | "FAILED" | "UNREACHABLE", "checkedWith": "…",
             "detail": "…"}}
 
@@ -214,15 +217,26 @@ def main():
     for unit in job["units"]:
         if unit["key"] not in manifest:
             raise SystemExit(f"{unit['key']} is not a unit of {job['manifest']}")
-        by_url.setdefault(unit["url"], []).append(dict(unit))
-    for n, (url, wanted) in enumerate(by_url.items()):
+        source = ("stored", unit["stored"]) if unit.get("stored") else ("url", unit["url"])
+        by_url.setdefault(source, []).append(dict(unit))
+    for n, ((kind, where), wanted) in enumerate(by_url.items()):
         tmp = tempfile.mkdtemp(prefix="recheck-")
         try:
             try:
-                download = os.path.join(tmp, "download")
-                fetch(url, download)
-                find_proofs(download, wanted, tmp)
-                problem = "the link has no file with the declared size and SHA-256"
+                if kind == "stored":
+                    # A bare file name next to the job file, never a path: the runner put it there.
+                    download = os.path.join(os.path.dirname(os.path.abspath(sys.argv[1])), where)
+                    if os.path.basename(where) != where or where.startswith(".") or not os.path.isfile(download):
+                        raise Unreachable("the stored file is not in the job directory")
+                    if os.path.getsize(download) > MAX_DOWNLOAD:
+                        raise Unreachable("the stored file is larger than the size limit")
+                    find_proofs(download, wanted, tmp)
+                    problem = "the stored file has no proof with the declared size and SHA-256"
+                else:
+                    download = os.path.join(tmp, "download")
+                    fetch(where, download)
+                    find_proofs(download, wanted, tmp)
+                    problem = "the link has no file with the declared size and SHA-256"
             except Unreachable as e:
                 problem = str(e)
             for unit in wanted:
@@ -233,7 +247,7 @@ def main():
                 out[unit["key"]] = {"result": result, "checkedWith": used, "detail": detail}
         finally:
             shutil.rmtree(tmp, ignore_errors=True)
-        print(f"link {n + 1} of {len(by_url)}: " + ", ".join(
+        print(f"{'stored file' if kind == 'stored' else 'link'} {n + 1} of {len(by_url)}: " + ", ".join(
             f"{u['key']} {out[u['key']]['result']}" for u in wanted), flush=True)
     with open(sys.argv[2], "w") as fh:
         json.dump(out, fh, indent=1)

@@ -7,8 +7,9 @@
 
 Your batch page on papex.org shows the first command with a key for your batch, to copy. With the
 key the kit fetches the batch from Papex, tells Papex how many units are done while it runs, and
-sends the result file at the end. Nothing else leaves this computer, and the key is never written
-to a file or printed. --api names another Papex server (default https://api.papex.org).
+sends the result file at the end, followed by the proofs of the units the batch marks, which Papex
+Labs checks again. Nothing else leaves this computer, and the key is never written to a file or
+printed. --api names another Papex server (default https://api.papex.org).
 
 BATCH_FILE is the batch file you can download from the batch page instead. Then the kit sends
 nothing anywhere, and you upload the result file on the batch page yourself.
@@ -18,7 +19,8 @@ an LRAT proof, and checks that proof with the patched lrat-check of this reposit
 then writes two files in shared-work/work/BATCH/:
 
   BATCH.result.json     the result; with BATCH_FILE a copy is put next to it, to upload
-  BATCH.proofs.tar.xz   the proofs of the units the batch marks; keep it until the batch is decided
+  BATCH.proofs.tar.xz   the proofs of the units the batch marks; with the key it is sent to Papex,
+                        otherwise keep it until the batch is decided
 
 A stopped run continues where it stopped when you give the same command again. --check only tests
 that the tools on this computer work.
@@ -339,6 +341,54 @@ class Kit:
             reason = str(getattr(e, "reason", None) or e) or type(e).__name__
             raise KitError(None, f"no answer: {reason}") from None
 
+    def upload(self, route, path, sha256, told=None, timeout=120.0):
+        """PUT a file as it is on disk, a block at a time, with its length and SHA-256 named."""
+        size = os.path.getsize(path)
+
+        def blocks():
+            sent = 0
+            with open(path, "rb") as fh:
+                for block in iter(lambda: fh.read(256 * 1024), b""):
+                    yield block
+                    sent += len(block)
+                    if told:
+                        told(sent, size)
+
+        return self.put_archive(route, blocks(), size, sha256, timeout)
+
+    def put_archive(self, route, data, size, sha256, timeout):
+        req = urllib.request.Request(self.api + "/api/shared-work/kit" + route, data=data, method="PUT")
+        req.add_unredirected_header("Authorization", "Bearer " + self.key)
+        req.add_header("User-Agent", "kobon-shared-work-kit/" + KIT_VERSION)
+        req.add_header("Accept", "application/json")
+        req.add_header("Content-Type", "application/x-xz")
+        req.add_header("Content-Length", str(size))
+        req.add_header("X-Papex-Sha256", sha256)
+        try:
+            with self.opener.open(req, timeout=timeout) as answer:
+                return answer.read()
+        except urllib.error.HTTPError as e:
+            try:
+                answer = json.loads(e.read().decode("utf-8", "replace"))
+                text = answer.get("error") or answer.get("message")
+            except (ValueError, AttributeError, OSError):
+                text = None
+            raise KitError(e.code, " ".join(str(text).split())[:300] if text else f"HTTP {e.code}") from None
+        except (urllib.error.URLError, OSError, http.client.HTTPException, ValueError) as e:
+            reason = str(getattr(e, "reason", None) or e) or type(e).__name__
+            raise KitError(None, f"no answer: {reason}") from None
+
+    def refusal(self, route, sha256):
+        """Why Papex would not take an upload right now: its refusal (a KitError), or None when it
+        would take one or cannot be reached. Asked with an upload that holds nothing, after a real
+        one was cut off: Papex refuses before it reads, so the refusal itself never arrived."""
+        try:
+            self.put_archive(route, b"", 0, sha256, 30.0)
+        except KitError as e:
+            # 400 is what an empty archive gets from a Papex that would have taken a full one.
+            return None if e.status in (None, 400) else e
+        return None
+
 
 class Progress:
     """Tells Papex how many units are done, from a thread of its own, so the run never waits for it.
@@ -488,6 +538,46 @@ def send_result(kit, path):
         page = None
     UI.sent(True, page=page)
     return True
+
+
+PROOFS_TRIES = 3            # how often the proofs are offered to a Papex that is busy or does not answer
+PROOFS_RETRY_SECONDS = 30
+
+
+def file_sha256(path):
+    digest = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for block in iter(lambda: fh.read(1 << 20), b""):
+            digest.update(block)
+    return "0x" + digest.hexdigest()
+
+
+def send_proofs(kit, archive, count):
+    """Send the kept proofs to Papex, so nobody has to put them anywhere or give a link.
+
+    True when Papex has them. None when this Papex does not take proofs this way (the link way
+    stays). Otherwise the reason, in words, and the link way stays too. Never stops the run."""
+    digest = file_sha256(archive)
+    UI.proofs_sending(count, os.path.getsize(archive))
+    try:
+        for attempt in range(1, PROOFS_TRIES + 1):
+            try:
+                kit.upload("/proofs", archive, digest, UI.proofs_progress)
+            except KitError as e:
+                if e.status is None:  # cut off without an answer: ask what the answer was
+                    e = kit.refusal("/proofs", digest) or e
+                # A busy or silent Papex is asked again: nobody should be sent to links for a hiccup.
+                if e.status in (None, 502, 503, 504) and attempt < PROOFS_TRIES:
+                    UI.proofs_waiting(PROOFS_RETRY_SECONDS)
+                    time.sleep(PROOFS_RETRY_SECONDS)
+                    continue
+                UI.proofs_sent(False)
+                return None if e.status in (404, 405) else e.why()
+            UI.proofs_sent(True)
+            return True
+    except KeyboardInterrupt:
+        UI.proofs_sent(False)
+        return "stopped"
 
 
 def arg(name, default, cast=str):
@@ -687,7 +777,8 @@ def run():
         ui.upload_by_hand()
     if kept:
         archive = bundle(work, key, kept, records)
-        ui.kept(os.path.relpath(archive), len(kept), os.path.getsize(archive) / 1e6)
+        with_papex = send_proofs(kit, archive, len(kept)) if kit and sent else None
+        ui.kept(os.path.relpath(archive), len(kept), os.path.getsize(archive) / 1e6, with_papex)
     ui.next_steps()
     if failed:
         ui.note(f"\nNOTE: the checker did not verify the proof of {len(failed)} unit(s): {', '.join(failed[:5])}.\n"

@@ -597,6 +597,42 @@ class Stage(Show):
             if closed:
                 self.after = ["This batch no longer takes a result, on the batch page either."]
 
+    def proofs_sending(self, count, size):
+        self.proof_size, self.proof_sent, self.proof_state, self.proof_start = size, 0, "run", time.monotonic()
+        self.proof_again = None
+        self.start_painting(self.proof_lines, rate=20)
+
+    def proofs_progress(self, sent, size):
+        self.proof_sent, self.proof_again = sent, None
+
+    def proofs_waiting(self, seconds):
+        self.proof_again = time.monotonic() + seconds
+
+    def proofs_sent(self, ok):
+        self.proof_state = "ok" if ok else "no"
+        self.end_painting(self.proof_lines)
+
+    def proof_lines(self, tick):
+        megabytes = f"{self.proof_size / 1e6:.1f} MB"
+        if self.proof_state == "ok":
+            return ["  " + self.ink("✓", fg=self.grad(0.75), bold=True) + f" {'Proofs':<11}"
+                    + self.ink(f"with Papex ({megabytes}): nothing to host, nothing to paste", dim=True)]
+        if self.proof_state == "no":
+            return ["  " + self.ink("✗", fg=self.seal, bold=True) + f" {'Proofs':<11}" + self.ink("not sent to Papex", fg=self.seal)]
+        t = time.monotonic() - self.proof_start
+        if self.proof_again:   # Papex was busy or silent: the wait before the next try, counted down
+            left = max(0, int(self.proof_again - time.monotonic()) + 1)
+            return ["  " + self.ink(SPIN[int(t * 14) % len(SPIN)], fg=self.grad(0.8)) + f" {'Proofs':<11}"
+                    + self.ink(f"Papex did not take them just now; trying again in {left} s", dim=True)]
+        track, gone = 22, self.proof_sent / max(1, self.proof_size)
+        line = "".join(self.ink("◆", fg=self.flash, bold=True) if (i - t * 16) % 7 < 1
+                       else self.ink("━", fg=self.grad(0.3 + 0.5 * i / track)) if i < gone * track
+                       else self.ink("─", fg=self.edge) for i in range(track))
+        return ["  " + self.ink(SPIN[int(t * 14) % len(SPIN)], fg=self.grad(0.8)) + f" {'Proofs':<11}"
+                + self.ink("this computer ", dim=True) + self.ink("●", fg=self.grad(0.7)) + line
+                + self.ink("▶ ", fg=self.grad(0.7)) + self.ink("Papex", bold=True)
+                + self.ink(f"  {self.proof_sent / 1e6:.1f} of {megabytes}", dim=True)]
+
     def box(self, title, lines):
         """What to do next, in a frame whose edge carries the gradient."""
         inner = max(len(line) for line in lines + [title]) + 2
