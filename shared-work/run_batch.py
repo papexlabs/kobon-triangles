@@ -1,25 +1,34 @@
 #!/usr/bin/env python3
 """Run a batch of the Kobon shared-work list on your own computer.
 
+  python3 shared-work/run_batch.py --key KIT_KEY [--api URL] [--workers N] [--agent-host NAME]
   python3 shared-work/run_batch.py BATCH_FILE [--workers N] [--agent-host NAME]
   python3 shared-work/run_batch.py --check
 
-BATCH_FILE is the file you downloaded from your batch page on papex.org; the page shows this
-command with the file's name. For every unit of the batch the kit writes the unit's formula, solves
-it with CaDiCaL, which writes an LRAT proof, and checks that proof with the patched lrat-check of
-this repository (checker/). It then writes two files in shared-work/work/BATCH/:
+Your batch page on papex.org shows the first command with a key for your batch, to copy. With the
+key the kit fetches the batch from Papex, tells Papex how many units are done while it runs, and
+sends the result file at the end. Nothing else leaves this computer, and the key is never written
+to a file or printed. --api names another Papex server (default https://api.papex.org).
 
-  BATCH.result.json     what you upload on the batch page; a copy is put next to BATCH_FILE
+BATCH_FILE is the batch file you can download from the batch page instead. Then the kit sends
+nothing anywhere, and you upload the result file on the batch page yourself.
+
+For every unit of the batch the kit writes the unit's formula, solves it with CaDiCaL, which writes
+an LRAT proof, and checks that proof with the patched lrat-check of this repository (checker/). It
+then writes two files in shared-work/work/BATCH/:
+
+  BATCH.result.json     the result; with BATCH_FILE a copy is put next to it, to upload
   BATCH.proofs.tar.xz   the proofs of the units the batch marks; keep it until the batch is decided
 
 A stopped run continues where it stopped when you give the same command again. --check only tests
-that the tools on this computer work. Nothing is sent anywhere by this program.
+that the tools on this computer work.
 
 Needs Python 3.9 or later, a C compiler (cc) and CaDiCaL 1.9.0 or later as `cadical` on the PATH
 (or named by the environment variable CADICAL). See shared-work/README.md.
 """
 
 import hashlib
+import http.client
 import json
 import os
 import platform
@@ -30,6 +39,9 @@ import sys
 import tarfile
 import threading
 import time
+import urllib.error
+import urllib.parse
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -40,11 +52,16 @@ from run_cubes import lrat_verdict  # noqa: E402  (tree put scripts/ on the path
 BATCH_SCHEMA = "papex-shared-work-batch/v1"
 RESULT_SCHEMA = "papex-shared-work-result/v1"
 RESULT_MAX_BYTES = 262144
-KIT_VERSION = "1"
+KIT_VERSION = "2"
 CHECKER_SRC = os.path.join(tree.ROOT, "checker", "lrat-check.c")
 CHECKER_VERSION = "drat-trim 2e3b2dc + empty-clause patch"
 WORK = os.path.join(HERE, "work")
 AGENT_HOST_RE = re.compile(r"^[\w ._+()/:-]{1,80}$")
+DEFAULT_API = "https://api.papex.org"
+KEY_RE = re.compile(r"^swk_[A-Za-z0-9_-]{43}$")
+KEY_HASHES = "kit-keys.sha256"  # in a batch's work folder: the SHA-256 of each key used, never a key
+PROGRESS_GAP = 2.0      # seconds between two progress reports at least
+PROGRESS_TIMEOUT = 5.0  # seconds a progress report may take
 
 # Pigeonhole: 4 pigeons do not fit in 3 holes. Small, unsatisfiable, and it needs real proof steps.
 SELFTEST_UNSAT = "p cnf 12 22\n" + "".join(
@@ -56,10 +73,17 @@ SELFTEST_BAD_PROOF = "3 0 0\n"
 
 running = set()
 running_lock = threading.Lock()
+say_lock = threading.Lock()
 
 
 def stop(message):
     raise SystemExit(message)
+
+
+def say(line):
+    """Print one line; the progress thread prints too, so a line is never cut by another."""
+    with say_lock:
+        print(line, flush=True)
 
 
 def call(cmd):
@@ -257,8 +281,227 @@ def bundle(work, batch_key, kept, records):
     return path
 
 
+# With --key: the three kit routes of Papex. Standard library only.
+
+class KitError(Exception):
+    """An answer of Papex that is not a success (status), or no answer at all (status None)."""
+
+    def __init__(self, status, text):
+        super().__init__(text)
+        self.status = status
+
+    def why(self):
+        return str(self).rstrip(".")
+
+
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    """A redirect is taken as an error, so the key never goes to another address."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+class Kit:
+    """The kit routes of Papex for one batch. The key goes only into the Authorization header."""
+
+    def __init__(self, api, key):
+        self.api, self.key = api, key
+        self.opener = urllib.request.build_opener(NoRedirect)
+
+    def request(self, method, route, body=None, timeout=30.0):
+        req = urllib.request.Request(self.api + "/api/shared-work/kit" + route, data=body, method=method)
+        req.add_unredirected_header("Authorization", "Bearer " + self.key)
+        req.add_header("User-Agent", "kobon-shared-work-kit/" + KIT_VERSION)
+        req.add_header("Accept", "application/json")
+        if body is not None:
+            req.add_header("Content-Type", "application/json")
+        try:
+            with self.opener.open(req, timeout=timeout) as answer:
+                return answer.read()
+        except urllib.error.HTTPError as e:
+            try:  # Papex answers an error with {"code": ..., "error": "what happened", ...}
+                answer = json.loads(e.read().decode("utf-8", "replace"))
+                text = answer.get("error") or answer.get("message")
+            except (ValueError, AttributeError, OSError):
+                text = None
+            raise KitError(e.code, " ".join(str(text).split())[:300] if text else f"HTTP {e.code}") from None
+        except (urllib.error.URLError, OSError, http.client.HTTPException, ValueError) as e:
+            reason = str(getattr(e, "reason", None) or e) or type(e).__name__
+            raise KitError(None, f"no answer: {reason}") from None
+
+
+class Progress:
+    """Tells Papex how many units are done, from a thread of its own, so the run never waits for it.
+
+    The first report goes at once, then at most one every PROGRESS_GAP seconds with the newest count,
+    and the last when finish() is called (unless the report before it already carried that count).
+    A report that fails is dropped: the first failure prints one line, later ones are silent."""
+
+    def __init__(self, kit, done):
+        self.kit, self.done = kit, done
+        self.sent = self.at = None
+        self.final = self.closed = self.failed = self.ok = False
+        self.cond = threading.Condition()
+        self.thread = threading.Thread(target=self.loop, daemon=True)
+        self.thread.start()
+
+    def update(self, done):
+        with self.cond:
+            self.done = done
+            self.cond.notify()
+
+    def finish(self, done):
+        """Send the last count, waiting 3 seconds for it at most: the result does not wait longer.
+        (A report that comes after the result is ignored by Papex, so a late one does no harm.)"""
+        with self.cond:
+            self.done, self.final = done, True
+            self.cond.notify()
+        self.thread.join(3.0)
+        with self.cond:
+            self.closed = True
+            self.cond.notify()
+
+    def due(self):
+        """Seconds until the next report may go (0: now), or None while there is nothing new."""
+        if self.at is None or self.closed:
+            return 0
+        if self.final:
+            # Papex keeps no report that comes less than a second after the one before it.
+            return 0 if self.done == self.sent else max(0.0, self.at + 1.25 - time.monotonic())
+        if self.done != self.sent:
+            return max(0.0, self.at + PROGRESS_GAP - time.monotonic())
+        return None
+
+    def loop(self):
+        while True:
+            with self.cond:
+                wait = self.due()
+                while wait != 0:
+                    self.cond.wait(wait)
+                    wait = self.due()
+                if self.closed or (self.final and self.ok and self.done == self.sent):
+                    return
+                done, final = self.done, self.final
+                self.sent, self.at = done, time.monotonic()
+            try:
+                self.kit.request("POST", "/progress", json.dumps({"done": done}).encode(), PROGRESS_TIMEOUT)
+                self.ok = True
+            except Exception as e:  # a report must never stop the run
+                self.ok = False
+                if not self.failed and not self.closed:
+                    self.failed = True
+                    why = e.why() if isinstance(e, KitError) else str(e)
+                    say(f"Could not tell Papex how far the run is ({why}). The run goes on, and the result "
+                        "is still sent at the end.")
+            if final:
+                return
+
+
+def api_address(url):
+    parts = urllib.parse.urlsplit(url)
+    if parts.scheme == "https" or (parts.scheme == "http" and parts.hostname in ("127.0.0.1", "localhost", "::1")):
+        return url.rstrip("/")
+    stop("--api takes an https address, for example https://api.papex.org (http only on this computer).")
+
+
+def key_hash(key):
+    return hashlib.sha256(key.encode()).hexdigest()
+
+
+def batch_of_key(key):
+    """The batch a key was used for before on this computer, found by the key's SHA-256."""
+    for name in sorted(os.listdir(WORK)) if os.path.isdir(WORK) else []:
+        try:
+            if key_hash(key) in open(os.path.join(WORK, name, KEY_HASHES)).read().split():
+                return name
+        except OSError:
+            continue
+    return None
+
+
+def fetch_batch(kit):
+    """GET the batch and keep it as the batch file in its work folder; return that file's path."""
+    try:
+        body = kit.request("GET", "/batch")
+    except KitError as e:
+        if e.status == 401:
+            lines = [f"The key was not accepted ({e.why()}). Copy the command again from your batch page "
+                     "on papex.org and run it."]
+            name = batch_of_key(kit.key)
+            result = name and os.path.join(WORK, name, f"{name}.result.json")
+            if result and os.path.exists(result):
+                lines.append(f"The result file of batch {name} is here: {os.path.relpath(result)}")
+                lines.append("  You can also upload it on the batch page by hand.")
+            stop("\n".join(lines))
+        if e.status == 409:
+            stop(f"This batch no longer takes a result ({e.why()}). Nothing was run.")
+        if e.status is None:
+            stop(f"Papex could not be reached ({e.why()}). Check the connection and run the same "
+                 "command again.")
+        stop(f"Papex did not give the batch ({e.why()}). Run the same command again later.")
+    try:
+        name = json.loads(body).get("batch")
+    except (ValueError, AttributeError):
+        name = None
+    if not re.match(r"^b-[0-9a-f]{6,10}$", str(name)):
+        stop("Papex did not send a batch file. Run the same command again later.")
+    work = os.path.join(WORK, name)
+    os.makedirs(work, exist_ok=True)
+    path = os.path.join(work, f"{name}.json")
+    with open(path, "wb") as fh:
+        fh.write(body)
+    hashes = os.path.join(work, KEY_HASHES)
+    if not os.path.exists(hashes) or key_hash(kit.key) not in open(hashes).read().split():
+        with open(hashes, "a") as fh:
+            fh.write(key_hash(kit.key) + "\n")
+    return path
+
+
+def send_result(kit, path):
+    """PUT the result file's bytes as they are on disk, and say what comes next either way.
+    True when Papex took it."""
+    with open(path, "rb") as fh:
+        body = fh.read()
+    try:
+        answer = kit.request("PUT", "/result", body, 60.0)
+    except (KitError, KeyboardInterrupt) as e:
+        why = e.why() if isinstance(e, KitError) else "stopped"
+        print(f"  It was not sent ({why}).")
+        if getattr(e, "status", None) == 409:
+            print("  This batch no longer takes a result, on the batch page either.")
+        else:
+            print("  Upload it on your batch page on papex.org, choose how you are shown, and send it.")
+        return False
+    print("  Sent to Papex. Go back to your batch page, choose how you are shown, and press Send.")
+    try:
+        page = json.loads(answer).get("pagePath")
+    except (ValueError, AttributeError):
+        page = None
+    if isinstance(page, str) and re.match(r"^/[\w/.-]{1,200}$", page):
+        print(f"  {'https://papex.org' + page if kit.api == DEFAULT_API else page}")
+    return True
+
+
 def arg(name, default, cast=str):
-    return cast(sys.argv[sys.argv.index(name) + 1]) if name in sys.argv else default
+    if name not in sys.argv:
+        return default
+    at = sys.argv.index(name) + 1
+    if at >= len(sys.argv):
+        stop(f"{name} needs a value after it.")
+    return cast(sys.argv[at])
+
+
+def positional():
+    """The arguments that are neither options nor the values of options."""
+    found, skip = [], False
+    for a in sys.argv[1:]:
+        if skip:
+            skip = False
+        elif a in ("--key", "--api", "--workers", "--agent-host"):
+            skip = True
+        elif not a.startswith("-"):
+            found.append(a)
+    return found
 
 
 def main():
@@ -266,6 +509,27 @@ def main():
         stop("Python 3.9 or later is needed.")
     if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help"):
         stop(__doc__)
+    check = "--check" in sys.argv
+    key = arg("--key", None)
+    files = positional()
+    kit = None
+    if not check:
+        if any(f.startswith("swk_") for f in files):
+            stop("This looks like a kit key. Put --key before it, as in the command on your batch page:\n"
+                 "  python3 shared-work/run_batch.py --key <kit key>")
+        if key is not None and files:
+            stop("Give the key or a batch file, not both. With --key the kit fetches the batch from "
+                 "Papex; with a batch file it sends nothing.")
+        if key is None and not files:
+            stop("Give the key or a batch file. Your batch page on papex.org shows the command to copy:\n"
+                 "  python3 shared-work/run_batch.py --key <kit key>\n"
+                 "  python3 shared-work/run_batch.py ~/Downloads/<batch file>")
+        if key is not None:
+            if not KEY_RE.match(key):
+                stop("This is not a kit key. Copy the command again from your batch page on papex.org.")
+            kit = Kit(api_address(arg("--api", DEFAULT_API)), key)
+            print("With the key, this run tells Papex how many units are done and sends the result "
+                  "file at the end. Nothing else leaves this computer.", flush=True)
     os.makedirs(WORK, exist_ok=True)
     tools = find_tools()
     tests = self_test(tools)
@@ -275,12 +539,13 @@ def main():
         stop("A tool failed its self-test, so nothing was run. Check the CaDiCaL version (1.9.0 or "
              "later) and build checker/lrat-check again from a fresh copy of the repository.")
     top = tree.ensure_top_cnf()
-    if sys.argv[1] == "--check":
-        print("This computer is ready. Take units on the list's page on papex.org, download the "
-              "batch file and run the command your batch page shows.")
+    if check:
+        print("This computer is ready. Take units on the list's page on papex.org and run the "
+              "command your batch page shows.")
         return
 
-    batch = load_batch(sys.argv[1])
+    batch_path = fetch_batch(kit) if kit else files[0]
+    batch = load_batch(batch_path)
     workers = arg("--workers", max(1, (os.cpu_count() or 2) // 2), int)
     agent_host = arg("--agent-host", "").strip()
     if agent_host and not AGENT_HOST_RE.match(agent_host):
@@ -320,6 +585,8 @@ def main():
               "original run. Stop with Ctrl-C and run the same command again to continue.", flush=True)
     nice = ["nice", "-n", "10"] if shutil.which("nice") else []
     done = total - len(todo)
+    finished_count = done
+    progress = Progress(kit, finished_count) if kit else None
     pool = ThreadPoolExecutor(workers)
     try:
         with open(log, "a") as out:
@@ -335,7 +602,10 @@ def main():
                 done += 1
                 shown = {"UNSAT": "no solution, proof " + r.get("check", "").lower(),
                          "SAT": "A SOLUTION WAS FOUND", "UNKNOWN": "not finished"}[r["outcome"]]
-                print(f"[{done}/{total}] {r['key']}: {shown}, {r.get('seconds', 0)} s", flush=True)
+                say(f"[{done}/{total}] {r['key']}: {shown}, {r.get('seconds', 0)} s")
+                if progress and r["outcome"] in ("UNSAT", "SAT"):
+                    finished_count += 1
+                    progress.update(finished_count)
     except KeyboardInterrupt:
         pool.shutdown(wait=False, cancel_futures=True)
         with running_lock:
@@ -347,6 +617,8 @@ def main():
     sat = [k for k, r in records.items() if r["outcome"] == "SAT"]
     failed = [k for k, r in records.items() if r["outcome"] == "UNSAT" and r["check"] != "VERIFIED"]
     open_units = [u["key"] for u in batch["units"] if not finished(u["key"])]
+    if progress:
+        progress.finish(total - len(open_units))
     if open_units:
         stop(f"{len(open_units)} units did not finish (for example {open_units[0]}). "
              "Run the same command again; no result file was written.")
@@ -360,7 +632,7 @@ def main():
         fh.write(text)
     # The same file next to the batch file, where the batch page's file chooser opens.
     shown_path = os.path.relpath(result_path)
-    beside = os.path.join(os.path.dirname(os.path.abspath(sys.argv[1])), f"{key}.result.json")
+    beside = os.path.join(os.path.dirname(os.path.abspath(batch_path)), f"{key}.result.json")
     if os.path.abspath(beside) != os.path.abspath(result_path):
         try:
             with open(beside, "w") as fh:
@@ -373,7 +645,11 @@ def main():
     verified = sum(1 for r in records.values() if r.get("check") == "VERIFIED")
     print(f"Done: {verified} of {total} units have no solution, each with a checked proof.")
     print(f"Result file:  {shown_path}")
-    print("  Upload it on your batch page on papex.org, choose how you are shown, and send it.")
+    sent = True
+    if kit:
+        sent = send_result(kit, result_path)
+    else:
+        print("  Upload it on your batch page on papex.org, choose how you are shown, and send it.")
     if kept:
         archive = bundle(work, key, kept, records)
         print(f"Kept proofs:  {os.path.relpath(archive)} "
@@ -389,6 +665,8 @@ def main():
               "That would contradict the published result, so it is far more likely a fault of this run "
               f"than a discovery. Please keep {os.path.relpath(os.path.join(work, 'models'))} and open an issue at "
               "https://github.com/papexlabs/kobon-triangles/issues.")
+    if not sent:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
