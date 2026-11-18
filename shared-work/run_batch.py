@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Run a batch of the Kobon shared-work list on your own computer.
 
-  python3 shared-work/run_batch.py --key KIT_KEY [--api URL] [--workers N] [--agent-host NAME]
-  python3 shared-work/run_batch.py BATCH_FILE [--workers N] [--agent-host NAME]
-  python3 shared-work/run_batch.py --check
+  python3 shared-work/run_batch.py --key KIT_KEY [--api URL] [--workers N] [--agent-host NAME] [--plain]
+  python3 shared-work/run_batch.py BATCH_FILE [--workers N] [--agent-host NAME] [--plain]
+  python3 shared-work/run_batch.py --check [--plain]
 
 Your batch page on papex.org shows the first command with a key for your batch, to copy. With the
 key the kit fetches the batch from Papex, tells Papex how many units are done while it runs, and
@@ -22,6 +22,10 @@ then writes two files in shared-work/work/BATCH/:
 
 A stopped run continues where it stopped when you give the same command again. --check only tests
 that the tools on this computer work.
+
+In a terminal the kit draws the run: the batch's units as cells that fill as they finish, the count
+and the time left. Written to a file or a pipe, with NO_COLOR set, or with --plain, it prints one
+plain line per unit instead; both say the same.
 
 Needs Python 3.9 or later, a C compiler (cc) and CaDiCaL 1.9.0 or later as `cadical` on the PATH
 (or named by the environment variable CADICAL). See shared-work/README.md.
@@ -46,6 +50,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+import show  # noqa: E402
 import tree  # noqa: E402
 from run_cubes import lrat_verdict  # noqa: E402  (tree put scripts/ on the path)
 
@@ -73,7 +78,7 @@ SELFTEST_BAD_PROOF = "3 0 0\n"
 
 running = set()
 running_lock = threading.Lock()
-say_lock = threading.Lock()
+UI = show.Plain()  # what the terminal shows; main() may make it the drawn one
 
 
 def stop(message):
@@ -81,9 +86,8 @@ def stop(message):
 
 
 def say(line):
-    """Print one line; the progress thread prints too, so a line is never cut by another."""
-    with say_lock:
-        print(line, flush=True)
+    """Say one thing from any thread: a line of its own, or a note in the picture of the run."""
+    UI.note(line)
 
 
 def call(cmd):
@@ -274,10 +278,16 @@ def bundle(work, batch_key, kept, records):
     index_path = os.path.join(work, "proofs", "proofs.json")
     with open(index_path, "w") as fh:
         json.dump(index, fh, indent=1)
+    def nameless(member):
+        # This file may be put on the web: it must not carry this computer's user and group names.
+        member.uid = member.gid = 0
+        member.uname = member.gname = ""
+        return member
+
     with tarfile.open(path, "w:xz", preset=3) as tar:
-        tar.add(index_path, arcname="proofs.json")
+        tar.add(index_path, arcname="proofs.json", filter=nameless)
         for entry in index["proofs"]:
-            tar.add(os.path.join(work, "proofs", entry["file"]), arcname=entry["file"])
+            tar.add(os.path.join(work, "proofs", entry["file"]), arcname=entry["file"], filter=nameless)
     return path
 
 
@@ -465,20 +475,18 @@ def send_result(kit, path):
     try:
         answer = kit.request("PUT", "/result", body, 60.0)
     except (KitError, KeyboardInterrupt) as e:
-        why = e.why() if isinstance(e, KitError) else "stopped"
-        print(f"  It was not sent ({why}).")
-        if getattr(e, "status", None) == 409:
-            print("  This batch no longer takes a result, on the batch page either.")
-        else:
-            print("  Upload it on your batch page on papex.org, choose how you are shown, and send it.")
+        UI.sent(False, why=e.why() if isinstance(e, KitError) else "stopped",
+                closed=getattr(e, "status", None) == 409)
         return False
-    print("  Sent to Papex. Go back to your batch page, choose how you are shown, and press Send.")
     try:
         page = json.loads(answer).get("pagePath")
     except (ValueError, AttributeError):
         page = None
     if isinstance(page, str) and re.match(r"^/[\w/.-]{1,200}$", page):
-        print(f"  {'https://papex.org' + page if kit.api == DEFAULT_API else page}")
+        page = "https://papex.org" + page if kit.api == DEFAULT_API else page
+    else:
+        page = None
+    UI.sent(True, page=page)
     return True
 
 
@@ -505,6 +513,23 @@ def positional():
 
 
 def main():
+    try:
+        run()
+    except KeyboardInterrupt:  # outside the run of the units: during the checks, or while sending
+        UI.close()
+        if not UI.fail("\nStopped."):
+            raise SystemExit("\nStopped.")
+        raise SystemExit(1)
+    except SystemExit as e:
+        if isinstance(e.code, str) and UI.fail(e.code):  # the drawn show says the kit's last word itself
+            raise SystemExit(1)
+        raise
+    finally:
+        UI.close()  # the terminal gets its cursor back whatever ended the run
+
+
+def run():
+    global UI
     if sys.version_info < (3, 9):
         stop("Python 3.9 or later is needed.")
     if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help"):
@@ -528,23 +553,26 @@ def main():
             if not KEY_RE.match(key):
                 stop("This is not a kit key. Copy the command again from your batch page on papex.org.")
             kit = Kit(api_address(arg("--api", DEFAULT_API)), key)
-            print("With the key, this run tells Papex how many units are done and sends the result "
-                  "file at the end. Nothing else leaves this computer.", flush=True)
+    UI = ui = show.make(sys.argv)
+    ui.open(check)
+    if not check:
+        # Before anything else: what leaves this computer.
+        ui.leaves(kit is not None)
     os.makedirs(WORK, exist_ok=True)
-    tools = find_tools()
-    tests = self_test(tools)
-    print(f"CaDiCaL {tools['cadical_version']}: self-test {tests['cadical']}. "
-          f"lrat-check ({CHECKER_VERSION}): self-test {tests['lrat-check']}.", flush=True)
+    tools = ui.step("Tools", find_tools,
+                    lambda found: f"CaDiCaL {found['cadical_version']}, lrat-check ({CHECKER_VERSION})")
+    tests = ui.step("Self-test", lambda: self_test(tools),
+                    lambda found: f"solver {found['cadical']}, checker {found['lrat-check']}")
+    ui.tools(tools["cadical_version"], CHECKER_VERSION, tests)
     if "failed" in tests.values():
         stop("A tool failed its self-test, so nothing was run. Check the CaDiCaL version (1.9.0 or "
              "later) and build checker/lrat-check again from a fresh copy of the repository.")
-    top = tree.ensure_top_cnf()
+    top = ui.step("Formula", tree.ensure_top_cnf, lambda found: "ready")
     if check:
-        print("This computer is ready. Take units on the list's page on papex.org and run the "
-              "command your batch page shows.")
+        ui.ready()
         return
 
-    batch_path = fetch_batch(kit) if kit else files[0]
+    batch_path = ui.step("Batch", lambda: fetch_batch(kit), lambda found: "fetched from Papex") if kit else files[0]
     batch = load_batch(batch_path)
     workers = arg("--workers", max(1, (os.cpu_count() or 2) // 2), int)
     agent_host = arg("--agent-host", "").strip()
@@ -577,21 +605,27 @@ def main():
     todo = [u for u in batch["units"] if not finished(u["key"])]
     total = len(batch["units"])
     expected = sum(manifest[u["key"]].get("expectedSeconds", 30) for u in todo)
-    print(f"Batch {key}: {total} units, {len(keep)} marked to keep their proofs, "
-          f"{total - len(todo)} already done.", flush=True)
+    ui.batch(key, total, len(keep), total - len(todo))
     if todo:
-        print(f"Running {len(todo)} units with {workers} worker{'s' if workers != 1 else ''}; "
-              f"about {max(1, round(expected / workers / 60))} min on a computer like the one of the "
-              "original run. Stop with Ctrl-C and run the same command again to continue.", flush=True)
+        ui.running(len(todo), workers, expected)
     nice = ["nice", "-n", "10"] if shutil.which("nice") else []
     done = total - len(todo)
     finished_count = done
     progress = Progress(kit, finished_count) if kit else None
     pool = ThreadPoolExecutor(workers)
+
+    def job(unit):
+        ui.unit_started(unit["key"])
+        return run_unit(unit, top, manifest, work, tools, nice)
+
+    if todo:
+        waiting = {u["key"] for u in todo}
+        ui.live([u["key"] for u in batch["units"]], keep,
+                {u["key"] for u in batch["units"] if u["key"] not in waiting},
+                workers, progress, kit is not None, expected)
     try:
         with open(log, "a") as out:
-            for fut in as_completed([pool.submit(run_unit, u, top, manifest, work, tools, nice)
-                                     for u in todo]):
+            for fut in as_completed([pool.submit(job, u) for u in todo]):
                 r = fut.result()
                 if r["outcome"] == "INPUT_MISMATCH":
                     stop(f"The formula built here for unit {r['key']} is not the list's. This copy of "
@@ -600,9 +634,7 @@ def main():
                 out.write(json.dumps(r) + "\n")
                 out.flush()
                 done += 1
-                shown = {"UNSAT": "no solution, proof " + r.get("check", "").lower(),
-                         "SAT": "A SOLUTION WAS FOUND", "UNKNOWN": "not finished"}[r["outcome"]]
-                say(f"[{done}/{total}] {r['key']}: {shown}, {r.get('seconds', 0)} s")
+                ui.unit_done(r, done, total)
                 if progress and r["outcome"] in ("UNSAT", "SAT"):
                     finished_count += 1
                     progress.update(finished_count)
@@ -611,7 +643,11 @@ def main():
         with running_lock:
             for p in list(running):
                 p.kill()
+        ui.settle()
         stop("\nStopped. Run the same command again to continue.")
+    except BaseException:
+        ui.settle()
+        raise
     pool.shutdown()
 
     sat = [k for k, r in records.items() if r["outcome"] == "SAT"]
@@ -619,6 +655,7 @@ def main():
     open_units = [u["key"] for u in batch["units"] if not finished(u["key"])]
     if progress:
         progress.finish(total - len(open_units))
+    ui.settle()  # after the last count went, so the picture that stays says what Papex has
     if open_units:
         stop(f"{len(open_units)} units did not finish (for example {open_units[0]}). "
              "Run the same command again; no result file was written.")
@@ -641,27 +678,23 @@ def main():
         except OSError:
             pass
     kept = [u["key"] for u in batch["units"] if u["key"] in keep and records[u["key"]]["outcome"] == "UNSAT"]
-    print()
     verified = sum(1 for r in records.values() if r.get("check") == "VERIFIED")
-    print(f"Done: {verified} of {total} units have no solution, each with a checked proof.")
-    print(f"Result file:  {shown_path}")
+    ui.done(verified, total, shown_path)
     sent = True
     if kit:
         sent = send_result(kit, result_path)
     else:
-        print("  Upload it on your batch page on papex.org, choose how you are shown, and send it.")
+        ui.upload_by_hand()
     if kept:
         archive = bundle(work, key, kept, records)
-        print(f"Kept proofs:  {os.path.relpath(archive)} "
-              f"({len(kept)} proof{'s' if len(kept) != 1 else ''}, {os.path.getsize(archive) / 1e6:.1f} MB)")
-        print("  Keep this file. If Papex Labs asks for the proofs, put it at a direct https link and\n"
-              "  give that link for each marked unit on the batch page.")
+        ui.kept(os.path.relpath(archive), len(kept), os.path.getsize(archive) / 1e6)
+    ui.next_steps()
     if failed:
-        print(f"\nNOTE: the checker did not verify the proof of {len(failed)} unit(s): {', '.join(failed[:5])}.\n"
+        ui.note(f"\nNOTE: the checker did not verify the proof of {len(failed)} unit(s): {', '.join(failed[:5])}.\n"
               f"Their proofs are in {os.path.relpath(os.path.join(work, 'proofs'))}. Please keep them and "
               "open an issue at https://github.com/papexlabs/kobon-triangles/issues: this needs a look by a person.")
     if sat:
-        print(f"\nNOTE: CaDiCaL found a solution for {len(sat)} unit(s): {', '.join(sat[:5])}.\n"
+        ui.note(f"\nNOTE: CaDiCaL found a solution for {len(sat)} unit(s): {', '.join(sat[:5])}.\n"
               "That would contradict the published result, so it is far more likely a fault of this run "
               f"than a discovery. Please keep {os.path.relpath(os.path.join(work, 'models'))} and open an issue at "
               "https://github.com/papexlabs/kobon-triangles/issues.")

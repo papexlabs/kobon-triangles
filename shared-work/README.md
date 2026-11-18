@@ -35,15 +35,24 @@ it from [arminbiere/cadical](https://github.com/arminbiere/cadical)).
    python3 shared-work/run_batch.py --key swk_…
    ```
 
-   The kit fetches the batch's units, prints one line per unit and can be stopped and started
-   again with the same command. The batch page shows how far it has got. At the end the kit
-   sends the result file to the batch page. If the kit says the key is no longer valid, copy the
-   command again.
+   The kit fetches the batch's units and draws the run in the terminal: the units as cells that
+   fill as they finish, the count and the time left. It can be stopped and started again with
+   the same command, and the batch page shows how far it has got. At the end the kit sends the
+   result file to the batch page. If the kit says the key is no longer valid, copy the command
+   again.
 4. Go back to the batch page, choose how you are shown, and send the batch.
 5. Keep the proofs file the kit names at the end (`shared-work/work/b-948ffd/b-948ffd.proofs.tar.xz`
    for a batch named b-948ffd). It holds the proofs of the few units your batch marks. Papex Labs
    asks for them by email: put the file at a direct https link (a GitHub release, your own site, a
-   Dropbox link ending in `dl=1`) and give that link for each marked unit on the batch page.
+   Dropbox link ending in `dl=1`) and give that link for each marked unit on the batch page. The
+   file holds the proof files and an index, and no name of your computer or its user.
+
+Written to a file or a pipe, with `NO_COLOR` set, or with `--plain`, the kit prints one plain line
+per unit instead of drawing; both say the same. In a terminal with UTF-8 and at least 76 columns
+and 24 lines the drawing is at full size (large letters and digits, a frame around the run); in a
+smaller one it is simpler, and in a terminal that does not say it has 256 colours the kit prints
+the plain lines. The colours follow the terminal's background when the terminal tells it; if they
+look wrong on yours, set `PAPEX_KIT_BACKGROUND=light` or `=dark`.
 
 ### With a batch file instead
 
